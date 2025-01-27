@@ -10,8 +10,14 @@ import 'package:otela_investment_club_app/screens/login_screen.dart';
 import 'package:otela_investment_club_app/screens/main_screen.dart';
 import 'package:otela_investment_club_app/screens/portfolio.dart';
 import 'package:otela_investment_club_app/screens/splash_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+
+
+void main() async{
+ WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(); // Initialize Firebas
+
   runApp(MaterialApp(
     initialRoute: '/',
     routes: {

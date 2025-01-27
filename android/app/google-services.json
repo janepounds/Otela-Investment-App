@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "931733620931",
+    "project_id": "otela-project",
+    "storage_bucket": "otela-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:931733620931:android:1f63a9a206165476c5ba76",
+        "android_client_info": {
+          "package_name": "com.example.otela_investment_club_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgLOUxWcCKPfhX7n8hK3kT9mPka3f1M9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
