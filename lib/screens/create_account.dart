@@ -1,100 +1,90 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:otela_investment_club_app/screens/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
 
   @override
-  State<CreateAccountScreen> createState() => _CreateAccountScreenState();
+  // ignore: library_private_types_in_public_api
+  _CreateAccountScreenState createState() => _CreateAccountScreenState();
 }
 
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
-  bool _isChecked = false; // To manage the checkbox state
-  String _selectedCountryCode = '+1'; // Default country code
-
+  final _formKey = GlobalKey<FormState>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _nameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
-  final Map<String, TextEditingController> _controllers = {};
-
-  String errorMessage = '';
-
-
-  final List<String> _countryCodes = [
-    '+1',
-    '+44',
-    '+27',
-    '+91',
-    '+61'
-  ]; // List of country codes
-
-// Initialize controllers for each field
-  @override
-  void initState() {
-    super.initState();
-    _controllers['First Name'] = TextEditingController();
-    _controllers['Last Name'] = TextEditingController();
-    _controllers['Email'] = TextEditingController();
-  }
-
-
-  // Dispose all controllers to free up resources
-  @override
-  void dispose() {
-    _controllers.values.forEach((controller) => controller.dispose());
-    super.dispose();
-  }
-  void _validateAndSignUp() {
-  if (!_isChecked) {
-    setState(() {
-      errorMessage = 'Please agree to the Terms and Conditions.';
-    });
-    return;
-  }
-  if (_nameController.text.isEmpty ||
-      _emailController.text.isEmpty ||
-      _passwordController.text.isEmpty ||
-      _controllers['Phone Number']!.text.isEmpty) {
-    setState(() {
-      errorMessage = 'All fields are required.';
-    });
-    return;
-  }
-  // Call the sign-up method if everything is valid
-  _signUp();
-}
-
+  bool _isLoading = false;
+  bool _isChecked = false;
+  String _selectedCountryCode = '+1';
+  final List<String> _countryCodes = ['+1', '+44', '+27', '+91', '+61'];
 
   Future<void> _signUp() async {
+    if (!_formKey.currentState!.validate() || !_isChecked) {
+      if (!_isChecked) {
+        Fluttertoast.showToast(
+          msg: 'You must agree to the Terms and Conditions',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
-      // Create a user using Firebase Authentication
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      // After creating the user, store additional info in Firestore
       await _firestore.collection('users').doc(userCredential.user?.uid).set({
-        'name': _nameController.text.trim(),
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
         'email': _emailController.text.trim(),
-        'createdAt': Timestamp.now(),
+        'phone': '$_selectedCountryCode ${_phoneController.text.trim()}',
+        'createdAt': DateTime.now(),
       });
 
-      // Redirect to the home or login screen
-      Navigator.pushReplacementNamed(context, '/login'); // Replace with your desired screen
+      Fluttertoast.showToast(
+        msg: 'Account created successfully!',
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+
+      //save first name in shared preferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('firstName', _firstNameController.text.trim());
+
+      Navigator.pushReplacementNamed(context, '/login');
     } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+        msg: e.message ?? 'An error occurred.',
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    } finally {
       setState(() {
-        errorMessage = e.message ?? 'An error occurred';
+        _isLoading = false;
       });
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -102,14 +92,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Main Content Area with Scroll
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header Section
-                    Container(
+                     Container(
                       width: double.infinity,
                       color: const Color(0xFFA78A52), // Header background color
                       padding: const EdgeInsets.symmetric(
@@ -148,30 +136,53 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     ),
 
                     // Form Section
-                    Container(
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        // Form background color
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(
-                              30), // Curve only the top-right corner
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          _buildTextField('First Name'),
-                          const SizedBox(height: 16),
-                          _buildTextField('Last Name'),
-                          const SizedBox(height: 16),
-                          _buildTextField('Email'),
-                          const SizedBox(height: 16),
-
-                          // Phone Number Field
-                          Row(
-                            children: [
-                              // Country Code Dropdown
-                              Container(
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            _buildTextField(
+                              labelText: 'First Name',
+                              controller: _firstNameController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your first name.';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            _buildTextField(
+                              labelText: 'Last Name',
+                              controller: _lastNameController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your last name.';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            _buildTextField(
+                              labelText: 'Email',
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your email.';
+                                }
+                                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+$')
+                                    .hasMatch(value)) {
+                                  return 'Please enter a valid email address.';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Container(
                                 decoration: BoxDecoration(
                                   border: Border.all(color: Colors.grey),
                                   borderRadius: BorderRadius.circular(20),
@@ -200,82 +211,92 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(child: _buildTextField('Phone Number')),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          _buildTextField('Password', obscureText: true),
-                          const SizedBox(height: 16),
-                          _buildTextField('Confirm Password',
-                              obscureText: true),
-                          const SizedBox(height: 16),
-
-                          // Terms and Conditions
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment
-                                .center, // Align text with the checkbox
-                            children: [
-                              Checkbox(
-                                value: _isChecked,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _isChecked = value!;
-                                  });
-                                },
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    // Navigate to Terms and Conditions
-                                  },
-                                  child: const Text.rich(
-                                    TextSpan(
-                                      text: 'I agree to the ',
-                                      style: TextStyle(color: Colors.black),
-                                      children: [
-                                        TextSpan(
-                                          text: 'Terms and Conditions',
-                                          style: TextStyle(
-                                            color: Color(0xFF113293),
-                                             fontWeight: FontWeight.bold,
-                                            decoration:
-                                                TextDecoration.underline,                                               
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: _buildTextField(
+                                    labelText: 'Phone Number',
+                                    controller: _phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your phone number.';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Sign Up Button
-                          ElevatedButton(
-                            onPressed: _validateAndSignUp,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFA78A52),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 40,
-                                vertical: 12,
-                              ),
+                              ],
                             ),
-                            child: const Text(
-                              'Sign Up',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                            const SizedBox(height: 16),
+                            _buildTextField(
+                              labelText: 'Password',
+                              controller: _passwordController,
+                              obscureText: true,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password.';
+                                }
+                                if (value.length < 6) {
+                                  return 'Password must be at least 6 characters.';
+                                }
+                                return null;
+                              },
                             ),
-                          ),
-                          const SizedBox(height: 24),
+                            const SizedBox(height: 16),
+                            _buildTextField(
+                              labelText: 'Confirm Password',
+                              controller: _confirmPasswordController,
+                              obscureText: true,
+                              validator: (value) {
+                                if (value != _passwordController.text) {
+                                  return 'Passwords do not match.';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: _isChecked,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _isChecked = value!;
+                                    });
+                                  },
+                                ),
+                                const Expanded(
+                                  child: Text(
+                                    'I agree to the Terms and Conditions',
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            _isLoading
+                                ? const CircularProgressIndicator()
+                                : ElevatedButton(
+                                    onPressed: _signUp,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFA78A52),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 40,
+                                        vertical: 12,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Sign Up',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                   const SizedBox(height: 24),
 
                           // Already Have an Account? Sign In
                           Row(
@@ -288,6 +309,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                               GestureDetector(
                                 onTap: () {
                                   // Navigate to Sign In screen
+                                     Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => LoginScreen())
+                                     );
+                                      
                                 },
                                 child: const Text(
                                   'Sign In!',
@@ -298,16 +324,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 ),
                               ),
                             ],
-                          ),
-                        ],
+                          )
+                          ],
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-
-            // Footer Section
+         // Footer Section
             Container(
               margin: const EdgeInsets.symmetric(
                   horizontal: 16), // Add margin to start and end
@@ -375,42 +401,31 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ],
               ),
             )
+
           ],
         ),
       ),
     );
   }
 
-  // Helper to create text fields
-Widget _buildTextField(
-  String labelText, {
-  bool obscureText = false,
-  TextEditingController? controller,
-}) {
-  return TextFormField(
-    controller: controller ?? _controllers[labelText],
-    obscureText: obscureText,
-    decoration: InputDecoration(
-      labelText: labelText,
-      labelStyle: const TextStyle(color: Colors.grey),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.grey),
+  Widget _buildTextField({
+    required String labelText,
+    required TextEditingController controller,
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.grey),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.blue, width: 2),
-      ),
-    ),
-  );
-}
-
+    );
+  }
 }

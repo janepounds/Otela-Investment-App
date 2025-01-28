@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:otela_investment_club_app/screens/congratulation_screen.dart';
 import 'package:otela_investment_club_app/screens/create_account.dart';
+import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
 import 'package:otela_investment_club_app/screens/investing.dart';
 import 'package:otela_investment_club_app/screens/investing/bank_transfer_screen.dart';
 import 'package:otela_investment_club_app/screens/investing/fund_details_screen.dart';
@@ -11,6 +13,7 @@ import 'package:otela_investment_club_app/screens/main_screen.dart';
 import 'package:otela_investment_club_app/screens/portfolio.dart';
 import 'package:otela_investment_club_app/screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:otela_investment_club_app/screens/verification_screen.dart';
 
 
 
@@ -24,6 +27,9 @@ void main() async{
       '/': (context) => SplashScreen(),
       '/login': (context) => LoginScreen(),
       '/createAccount': (context) => CreateAccountScreen(),
+      '/verification': (context) => VerificationScreen(),
+      '/congratulation': (context) => CongratulationsScreen(),
+      '/dashboard': (context) => DashboardScreen(),
       '/main': (context) => MainScreen(),
       '/investing': (context) => InvestingScreen(),
       '/portfolio': (context) => PortfolioScreen(),

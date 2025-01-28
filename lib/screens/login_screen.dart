@@ -1,16 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:otela_investment_club_app/screens/create_account.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      Fluttertoast.showToast(
+        msg: "Please fill in both fields",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Authenticate user with Firebase
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Save email to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userEmail', email);
+
+      Fluttertoast.showToast(
+        msg: "Login successful!",
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+
+      // Navigate to the next screen (e.g., Home)
+      Navigator.pushReplacementNamed(context, '/main'); // Replace '/home' with your route
+    } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+        msg: e.message ?? "Login failed. Please try again.",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFDCB765), // Background color
+      backgroundColor: const Color(0xFFDCB765), // Background color
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -20,7 +83,7 @@ class LoginScreen extends StatelessWidget {
                 alignment: Alignment.topCenter,
                 children: [
                   // "otela" text
-                  Text(
+                  const Text(
                     'otela',
                     style: TextStyle(
                       fontSize: 50,
@@ -41,86 +104,85 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               // Login form
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-             TextFormField(
-                  decoration: InputDecoration(
-                    hintText: 'E-mail',
-                      hintStyle: TextStyle(
-                      color: Colors.white, // Change to the desired hint text color
-                      fontSize: 16,
-                    ),
-                    filled: true,
-                    fillColor: Color(0xFFa78a52),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none, // No border when the field is not focused
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none, // No border when the field is focused
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      hintText: 'E-mail',
+                      hintStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFa78a52),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
-                ),
-
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   TextFormField(
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Password',
-                        hintStyle: TextStyle(
-                          color: Colors.white, // Change to the desired hint text color
-                          fontSize: 16,
-                        ),
+                      hintStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                       filled: true,
-                      fillColor: Color(0xFFa78a52),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                       enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none, // No border when the field is not focused
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none, // No border when the field is focused
-                    ),
+                      fillColor: const Color(0xFFa78a52),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       ElevatedButton(
-                        onPressed: () {
-                          // Add navigation logic
-                        },
+                        onPressed: _isLoading ? null : _login,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFF9E0B1),
-                          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                          backgroundColor: const Color(0xFFF9E0B1),
+                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                         ),
-                        child: Text(
-                          'LOGIN',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFFA78A52),
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(color: Color(0xFFA78A52))
+                            : const Text(
+                                'LOGIN',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFA78A52),
+                                ),
+                              ),
                       ),
                       GestureDetector(
                         onTap: () {
                           // Navigate to Registration Screen
-                    Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => CreateAccountScreen()),
-                                      );
-
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const CreateAccountScreen()),
+                          );
                         },
-                        child: Text(
+                        child: const Text(
                           'Register Here',
                           style: TextStyle(
                             color: Colors.white,
@@ -131,12 +193,11 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              // Terms & Conditions
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: RichText(
-                  text: TextSpan(
+                  text: const TextSpan(
                     text: 'By signing in, you agree to our ',
                     style: TextStyle(
                       fontSize: 12,
