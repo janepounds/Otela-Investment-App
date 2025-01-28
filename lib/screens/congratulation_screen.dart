@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class CongratulationsScreen extends StatelessWidget {
+class CongratulationsScreen extends StatefulWidget {
   const CongratulationsScreen({super.key});
+   @override
+  // ignore: library_private_types_in_public_api
+  _CongratulationsScreenState createState() => _CongratulationsScreenState();
+}
+
+ class _CongratulationsScreenState extends State<CongratulationsScreen>{
+ 
+   String userName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    getUserName();
+  }
+
+  Future<void> getUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('firstName') ?? 'User'; // Default to "User" if null
+    });
+  }
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +38,7 @@ class CongratulationsScreen extends StatelessWidget {
           children: [
             Text('Congratulations!', style: TextStyle(fontSize: 28, color: Colors.green)),
             SizedBox(height: 10),
-            Text('Linda', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue)),
+            Text(userName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue)),
             SizedBox(height: 10),
             Text(
               'You have successfully created your account!\nOtela welcomes you to your home of AI powered Roboadvisory Investing services.',
@@ -41,4 +64,7 @@ class CongratulationsScreen extends StatelessWidget {
       ),
     );
   }
-}
+
+ }
+  
+ 

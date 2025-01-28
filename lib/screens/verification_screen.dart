@@ -1,8 +1,40 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/screens/congratulation_screen.dart';
 
-class VerificationScreen extends StatelessWidget {
-  const VerificationScreen({super.key});
+class VerificationScreen extends StatefulWidget {
+  final String verificationId;
+  const VerificationScreen(this.verificationId, {super.key});
+   @override
+  // ignore: library_private_types_in_public_api
+  _OtpVerificationScreenState createState() => _OtpVerificationScreenState();
+}
+
+
+  class _OtpVerificationScreenState extends State<VerificationScreen>{
+    final TextEditingController otpController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+
+
+  void verifyOTP() async {
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: widget.verificationId,
+        smsCode: otpController.text,
+      );
+      await _auth.signInWithCredential(credential);
+      //navigate to congratulation screen
+       Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CongratulationsScreen()),
+                );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Invalid OTP: ${e.toString()}")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +54,7 @@ class VerificationScreen extends StatelessWidget {
             ),
             SizedBox(height: 10),
             TextField(
+              controller: otpController,
               decoration: InputDecoration(
                 hintText: 'Verification code',
                 filled: true,
@@ -33,10 +66,7 @@ class VerificationScreen extends StatelessWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => CongratulationsScreen()),
-                );
+                verifyOTP();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFFD8A85B),

@@ -27,7 +27,7 @@ void main() async{
       '/': (context) => SplashScreen(),
       '/login': (context) => LoginScreen(),
       '/createAccount': (context) => CreateAccountScreen(),
-      '/verification': (context) => VerificationScreen(),
+    //  '/verification': (context) => VerificationScreen(),
       '/congratulation': (context) => CongratulationsScreen(),
       '/dashboard': (context) => DashboardScreen(),
       '/main': (context) => MainScreen(),

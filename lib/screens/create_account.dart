@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:otela_investment_club_app/screens/login_screen.dart';
+import 'package:otela_investment_club_app/screens/verification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CreateAccountScreen extends StatefulWidget {
@@ -22,13 +23,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  String verificationId = '';
 
   bool _isLoading = false;
   bool _isChecked = false;
-  String _selectedCountryCode = '+1';
+  String _selectedCountryCode = '+256';
   final List<String> _countryCodes = ['+1', '+44', '+27', '+91', '+61'];
 
   Future<void> _signUp() async {
@@ -62,17 +63,22 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         'createdAt': DateTime.now(),
       });
 
-      Fluttertoast.showToast(
-        msg: 'Account created successfully!',
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-      );
+      //send otp and navigate to verifcation screen
+
+
+      // Fluttertoast.showToast(
+      //   msg: 'Account created successfully!',
+      //   backgroundColor: Colors.green,
+      //   textColor: Colors.white,
+      // );
 
       //save first name in shared preferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('firstName', _firstNameController.text.trim());
 
-      Navigator.pushReplacementNamed(context, '/login');
+     // Navigator.pushReplacementNamed(context, '/login');
+
+      sendOTP();
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(
         msg: e.message ?? 'An error occurred.',
@@ -84,6 +90,35 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         _isLoading = false;
       });
     }
+  }
+
+
+   void sendOTP() async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: '$_selectedCountryCode ${_phoneController.text.trim()}',
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await _auth.signInWithCredential(credential);
+        // Navigate to the next screen
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Verification failed: ${e.message}")),
+        );
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        setState(() {
+          this.verificationId = verificationId;
+        });
+        // Navigate to OTP screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerificationScreen(verificationId),
+          ),
+        );
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {},
+    );
   }
 
   @override
