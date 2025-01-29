@@ -137,7 +137,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                       SizedBox(height: 15),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                           // Navigate to the next screen (e.g., Home)
+                       Navigator.pushReplacementNamed(context, '/createStokvel');
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFF113293),
                           padding: EdgeInsets.symmetric(

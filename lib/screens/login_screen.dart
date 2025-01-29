@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       // Navigate to the next screen (e.g., Home)
-      Navigator.pushReplacementNamed(context, '/main'); // Replace '/home' with your route
+      Navigator.pushReplacementNamed(context, '/dashboard'); // Replace '/home' with your route
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(
         msg: e.message ?? "Login failed. Please try again.",
