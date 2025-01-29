@@ -30,7 +30,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   bool _isLoading = false;
   bool _isChecked = false;
   String _selectedCountryCode = '+256';
-  final List<String> _countryCodes = ['+1', '+44', '+27', '+91', '+61'];
+  final List<String> _countryCodes = ['+256', '+254', '+270', '+291', '+261'];
 
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate() || !_isChecked) {
