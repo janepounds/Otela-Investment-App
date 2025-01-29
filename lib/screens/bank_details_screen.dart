@@ -9,7 +9,18 @@ class BankDetailscreen extends StatefulWidget {
 }
 
 class _BankDetailsScreenState extends State<BankDetailscreen> {
+  String? selectedBank;
+  String? selectedAccountType;
+  final TextEditingController accountNumberController = TextEditingController();
 
+  final List<String> banks = [
+    "Standard Bank",
+    "ABSA",
+    "FNB",
+    "Nedbank",
+    "Capitec"
+  ];
+  final List<String> accountTypes = ["Savings", "Current", "Business"];
 
   @override
   Widget build(BuildContext context) {
@@ -62,21 +73,39 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
                     const ProgressStepper(),
                     const SizedBox(height: 20),
                     const Text(
-                      "Stokvel Details",
+                      "Banking Details",
                       style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.blue),
                     ),
-                    const SizedBox(height: 20),
-                    buildInputField("Stokvel/Club", "Mbokodo Stokvel"),
-                    buildInputField("Registration Number", "Reg: cn654789321"),
-                    buildInputField("Stokvel Admin", "Linda Omara-Koledade"),
-                    buildPhoneInputField(),
-                    const SizedBox(height: 20),
-                    buildMembersList(),
-                    const SizedBox(height: 20),
-                    buildSaveButton()
+                    const SizedBox(height: 30),
+                    buildDropdownField("Bank", selectedBank, banks, (value) {
+                      setState(() {
+                        selectedBank = value;
+                      });
+                    }),
+                    buildDropdownField(
+                        "Account Type", selectedAccountType, accountTypes,
+                        (value) {
+                      setState(() {
+                        selectedAccountType = value;
+                      });
+                    }),
+                    buildInputField("Account Number", accountNumberController as String),
+                    const SizedBox(height: 30),
+                    buildSaveButton(),
+                    const SizedBox(height: 15),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text(
+                        "Back to Tax & Domicilium",
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -146,58 +175,6 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
     );
   }
 
-  Widget buildMembersList() {
-    List<Map<String, String>> members = [
-      {"name": "Linda K. (ADMIN)", "status": "", "action": "Edit"},
-      {"name": "Miriam O", "status": "(Pending Approval)", "action": "Edit"},
-      {"name": "Tebogo S", "status": "(Approve)", "action": "Edit"},
-      {"name": "Popi N", "status": "(Approve)", "action": "Edit"},
-      {"name": "Sam T", "status": "(Declined)", "action": "Edit"},
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Members",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue)),
-          const SizedBox(height: 5),
-          ...members.asMap().entries.map((entry) {
-            int index = entry.key + 1;
-            Map<String, String> member = entry.value;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("$index. ${member['name']} ${member['status']}",
-                    style: const TextStyle(fontSize: 14)),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(member['action']!,
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            );
-          }).toList(),
-          TextButton(
-            onPressed: () {},
-            child: const Text("Add Member",
-                style:
-                    TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget buildSaveButton() {
     return ElevatedButton(
       onPressed: () {},
@@ -213,6 +190,40 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
       ),
     );
   }
+
+  Widget buildDropdownField(String title, String? selectedValue, List<String> items, ValueChanged<String?> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 5),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: selectedValue,
+              hint: Text(title, style: const TextStyle(color: Colors.grey)),
+              isExpanded: true,
+              items: items.map((String item) {
+                return DropdownMenuItem(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
 }
 
 class ProgressStepper extends StatelessWidget {
@@ -254,6 +265,83 @@ class ProgressStepper extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+
+   Widget buildDropdownField(String title, String? selectedValue, List<String> items, ValueChanged<String?> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 5),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: selectedValue,
+              hint: Text(title, style: const TextStyle(color: Colors.grey)),
+              isExpanded: true,
+              items: items.map((String item) {
+                return DropdownMenuItem(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget buildInputField(String title, TextEditingController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 5),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintText: "Account Number",
+              hintStyle: TextStyle(color: Colors.grey),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+
+  Widget buildSaveButton() {
+    return ElevatedButton(
+      onPressed: () {},
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.amber.shade700,
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      ),
+      child: const Text(
+        "Save & Continue",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }

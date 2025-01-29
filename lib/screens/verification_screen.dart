@@ -4,9 +4,12 @@ import 'package:otela_investment_club_app/screens/congratulation_screen.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String verificationId;
-  const VerificationScreen(this.verificationId, {super.key});
+  
+  final String caller; // Identify the calling screen
+  const VerificationScreen(this.verificationId, {super.key, required this.caller});
 
   @override
+  // ignore: library_private_types_in_public_api
   _OtpVerificationScreenState createState() => _OtpVerificationScreenState();
 }
 
@@ -21,10 +24,14 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
         smsCode: otpController.text,
       );
       await _auth.signInWithCredential(credential);
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => CongratulationsScreen()),
+        MaterialPageRoute(
+        builder: (context) => CongratulationsScreen(caller: widget.caller))
       );
+      
+      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Invalid OTP: ${e.toString()}")),

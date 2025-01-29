@@ -16,7 +16,6 @@ import 'package:otela_investment_club_app/screens/portfolio.dart';
 import 'package:otela_investment_club_app/screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:otela_investment_club_app/screens/upload_document_screen.dart';
-import 'package:otela_investment_club_app/screens/verification_screen.dart';
 
 
 
@@ -31,7 +30,7 @@ void main() async{
       '/login': (context) => LoginScreen(),
       '/createAccount': (context) => CreateAccountScreen(),
     //  '/verification': (context) => VerificationScreen(),
-      '/congratulation': (context) => CongratulationsScreen(),
+     // '/congratulation': (context) => CongratulationsScreen(),
       '/dashboard': (context) => DashboardScreen(),
       '/main': (context) => MainScreen(),
       '/investing': (context) => InvestingScreen(),

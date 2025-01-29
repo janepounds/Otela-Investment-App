@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class UploadDocumentScreen extends StatefulWidget {
@@ -10,75 +14,90 @@ class UploadDocumentScreen extends StatefulWidget {
 
 class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
 
+  final TextEditingController taxNumberController = TextEditingController();
+  File? taxFile;
+  File? domiciliumFile;
+  String? taxFileUrl;
+  String? domiciliumFileUrl;
+  bool isUploading = false;
+
+  Future<void> pickFile(bool isTaxDocument) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null && result.files.single.path != null) {
+      setState(() {
+        if (isTaxDocument) {
+          taxFile = File(result.files.single.path!);
+        } else {
+          domiciliumFile = File(result.files.single.path!);
+        }
+      });
+    }
+  }
+
+  Future<void> uploadFile(File file, bool isTaxDocument) async {
+    setState(() {
+      isUploading = true;
+    });
+
+    try {
+      String fileName = file.path.split('/').last;
+      Reference storageRef = FirebaseStorage.instance.ref().child("documents/$fileName");
+      UploadTask uploadTask = storageRef.putFile(file);
+      TaskSnapshot snapshot = await uploadTask;
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      setState(() {
+        if (isTaxDocument) {
+          taxFileUrl = downloadUrl;
+        } else {
+          domiciliumFileUrl = downloadUrl;
+        }
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("File uploaded successfully: $fileName")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Upload failed: $e")),
+      );
+    }
+
+    setState(() {
+      isUploading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Header Section
-                    Container(
-                      width: double.infinity,
-                      color: const Color(0xFFA78A52), // Header background color
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                'Stokvel',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Finish setting up your stokvel',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Icon(
-                            Icons.menu, // Example menu icon
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const ProgressStepper(),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Stokvel Details",
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue),
-                    ),
-                    const SizedBox(height: 20),
-                    buildInputField("Stokvel/Club", "Mbokodo Stokvel"),
-                    buildInputField("Registration Number", "Reg: cn654789321"),
-                    buildInputField("Stokvel Admin", "Linda Omara-Koledade"),
-                    buildPhoneInputField(),
-                    const SizedBox(height: 20),
-                    buildMembersList(),
-                    const SizedBox(height: 20),
-                    buildSaveButton()
-                  ],
-                ),
+            const SizedBox(height: 30),
+            const Text("TAX PIN Certificate",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue)),
+            const SizedBox(height: 15),
+            buildInputField("Tax number (PIN/TIN/SSN)", taxNumberController),
+            const SizedBox(height: 10),
+            buildUploadSection("Document:", taxFile, taxFileUrl, () => pickFile(true), () => uploadFile(taxFile!, true)),
+            const SizedBox(height: 30),
+            const Text("Domicilium",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue)),
+            const SizedBox(height: 10),
+            buildUploadSection("Document:", domiciliumFile, domiciliumFileUrl, () => pickFile(false), () => uploadFile(domiciliumFile!, false)),
+            const SizedBox(height: 30),
+            isUploading ? const CircularProgressIndicator() : buildSaveButton(),
+            const SizedBox(height: 15),
+            TextButton(
+              onPressed: () {},
+              child: const Text(
+                "Back to Stokvel Details",
+                style: TextStyle(fontSize: 14, color: Colors.blue, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -87,174 +106,52 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
     );
   }
 
-  Widget buildInputField(String title, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
-        const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Text(value,
-              style: const TextStyle(fontSize: 16, color: Colors.black)),
-        ),
-        const SizedBox(height: 10),
-      ],
+  Widget buildInputField(String hint, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hint,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+      ),
     );
   }
 
-  Widget buildPhoneInputField() {
+  Widget buildUploadSection(String title, File? file, String? fileUrl, VoidCallback onPick, VoidCallback onUpload) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("Admin Number",
-            style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
         const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Row(
-            children: [
-              Image.network("https://flagcdn.com/w40/za.png",
-                  width: 25), // South Africa Flag
-              const SizedBox(width: 10),
-              const Text("+27",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black)),
-              const SizedBox(width: 10),
-              const Text("73 987 6543",
-                  style: TextStyle(fontSize: 16, color: Colors.black)),
-            ],
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            file != null
+                ? Expanded(child: Text(file.path.split('/').last, style: const TextStyle(color: Colors.black54)))
+                : const SizedBox(),
+            ElevatedButton(
+              onPressed: onPick,
+              child: const Text("Pick File", style: TextStyle(color: Colors.white)),
+            ),
+            if (file != null)
+              ElevatedButton(
+                onPressed: onUpload,
+                child: const Text("Upload", style: TextStyle(color: Colors.white)),
+              ),
+          ],
         ),
-        const SizedBox(height: 10),
-      ],
-    );
-  }
-
-  Widget buildMembersList() {
-    List<Map<String, String>> members = [
-      {"name": "Linda K. (ADMIN)", "status": "", "action": "Edit"},
-      {"name": "Miriam O", "status": "(Pending Approval)", "action": "Edit"},
-      {"name": "Tebogo S", "status": "(Approve)", "action": "Edit"},
-      {"name": "Popi N", "status": "(Approve)", "action": "Edit"},
-      {"name": "Sam T", "status": "(Declined)", "action": "Edit"},
-    ];
-
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Members",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue)),
-          const SizedBox(height: 5),
-          ...members.asMap().entries.map((entry) {
-            int index = entry.key + 1;
-            Map<String, String> member = entry.value;
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("$index. ${member['name']} ${member['status']}",
-                    style: const TextStyle(fontSize: 14)),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(member['action']!,
-                      style: const TextStyle(
-                          color: Colors.blue, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            );
-          }).toList(),
-          TextButton(
-            onPressed: () {},
-            child: const Text("Add Member",
-                style:
-                    TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+        if (fileUrl != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 5),
+            child: Text("Uploaded: $fileUrl", style: const TextStyle(color: Colors.green, fontSize: 12)),
           ),
-        ],
-      ),
+      ],
     );
   }
 
   Widget buildSaveButton() {
     return ElevatedButton(
       onPressed: () {},
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.amber.shade700,
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      ),
-      child: const Text(
-        "Save & Continue",
-        style: TextStyle(
-            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-      ),
-    );
-  }
-}
-
-class ProgressStepper extends StatelessWidget {
-  const ProgressStepper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          buildStep("Stokvel", Colors.amber.shade600),
-          buildStep("Tax & Domicilium", Colors.amber.shade600),
-          buildStep("Banking Details", Colors.blue.shade900),
-        ],
-      ),
-    );
-  }
-
-  Widget buildStep(String title, Color color) {
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: color,
-            child: const Icon(Icons.check, color: Colors.white, size: 18),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            title,
-            style: TextStyle(fontSize: 12, color: Colors.blue.shade900),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+      child: const Text("Save & Continue"),
     );
   }
 }

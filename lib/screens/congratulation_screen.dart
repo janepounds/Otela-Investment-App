@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
+import 'package:otela_investment_club_app/screens/stokvel_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CongratulationsScreen extends StatefulWidget {
-  const CongratulationsScreen({super.key});
+  final String caller;
+  const CongratulationsScreen({super.key, required this.caller});
 
   @override
+  // ignore: library_private_types_in_public_api
   _CongratulationsScreenState createState() => _CongratulationsScreenState();
 }
 
 class _CongratulationsScreenState extends State<CongratulationsScreen> {
   String userName = '';
+  String stokvel = '';
 
   @override
   void initState() {
@@ -23,6 +27,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
     setState(() {
       userName =
           prefs.getString('firstName') ?? 'User'; // Default to "User" if null
+      stokvel = prefs.getString('stokvel') ?? 'Default';
     });
   }
 
@@ -52,11 +57,9 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                   Text(
                     'Congratulations!',
                     style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      
-                      fontFamily: 'geat_vibes'
-                    ),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'geat_vibes'),
                   ),
                 ],
               ),
@@ -85,7 +88,9 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                       ),
                       SizedBox(height: 10),
                       Text(
-                        'You have successfully created your account!',
+                        widget.caller == "Create Account"
+                            ? "You have successfully created your account!"
+                            : "$stokvel has been successfully registered!",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Color(0xFF113293),
@@ -100,6 +105,21 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                       SizedBox(height: 40),
                       ElevatedButton(
                         onPressed: () {
+                          if (widget.caller == "Create Account") {
+                            // Navigate to Dashboard if called by Signup
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => DashboardScreen()),
+                            );
+                          } else {
+                            // Navigate to StockDetails if called by any other screen
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => StokvelDetailscreen()),
+                            );
+                          }
                           Navigator.push(
                             context,
                             MaterialPageRoute(

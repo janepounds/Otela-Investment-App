@@ -17,18 +17,36 @@ class CreateStokvelScreen extends StatefulWidget {
 class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
   final _formKey = GlobalKey<FormState>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final TextEditingController _stokvelNameController = TextEditingController();
-  final TextEditingController _stokvelNumberController = TextEditingController();
-  final TextEditingController _stokvelPurposeController = TextEditingController();
+  final TextEditingController _stokvelNumberController =
+      TextEditingController();
+  final TextEditingController _stokvelPurposeController =
+      TextEditingController();
 
   String verificationId = '';
+  String phone = '';
 
   bool _isLoading = false;
   bool _isChecked = false;
   String _selectedCountryCode = '+256';
   final List<String> _countryCodes = ['+256', '+254', '+270', '+291', '+261'];
+
+
+   @override
+  void initState() {
+    super.initState();
+    getUserName();
+  }
+
+  Future<void> getUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      phone =
+          prefs.getString('phone') ?? 'User'; // Default to "User" if null
+    });
+  }
+
 
   Future<void> _createStokvel() async {
     if (!_formKey.currentState!.validate() || !_isChecked) {
@@ -47,16 +65,28 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     });
 
     try {
-  
-      await _firestore.collection('stockvel').doc(userCredential.user?.uid).set({
-        'stokvelName': _stokvelNameController.text.trim(),
-        'stockvelNumber': _stokvelNumberController.text.trim(),
-        'stockvelPurpose': _stokvelPurposeController.text.trim(),
-        'createdAt': DateTime.now(),
-      });
-
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection('stokvel')
+            .doc(user.uid)
+            .collection('user_stokvels')
+            .add({
+          'stokvelName': _stokvelNameController.text.trim(),
+          'stockvelNumber': _stokvelNumberController.text.trim(),
+          'stockvelPurpose': _stokvelPurposeController.text.trim(),
+          'createdAt': Timestamp.now(),
+        }).then((value) {
+          Fluttertoast.showToast(
+            msg: 'Saved Successfulled',
+            backgroundColor: Colors.green,
+            textColor: Colors.white,
+          );
+        }).catchError((error) {
+          print("Failed to add stokvel: $error");
+        });
+      }
       //send otp and navigate to verifcation screen
-
 
       // Fluttertoast.showToast(
       //   msg: 'Account created successfully!',
@@ -64,11 +94,11 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
       //   textColor: Colors.white,
       // );
 
-      //save first name in shared preferences
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    // await prefs.setString('firstName', _firstNameController.text.trim());
+      //save stokvel name in shared preferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('stokvelName', _stokvelNameController.text.trim());
 
-     // Navigator.pushReplacementNamed(context, '/login');
+      // Navigator.pushReplacementNamed(context, '/login');
 
       sendOTP();
     } on FirebaseAuthException catch (e) {
@@ -84,10 +114,9 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     }
   }
 
-
-   void sendOTP() async {
+  void sendOTP() async {
     await _auth.verifyPhoneNumber(
-      phoneNumber: '$_selectedCountryCode ${_stokvelNumberController.text.trim()}',
+      phoneNumber:  phone,
       verificationCompleted: (PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
         // Navigate to the next screen
@@ -105,7 +134,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => VerificationScreen(verificationId),
+            builder: (context) => VerificationScreen(verificationId, caller: "Create Club"),
           ),
         );
       },
@@ -124,7 +153,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                 child: Column(
                   children: [
                     // Header Section
-                     Container(
+                    Container(
                       width: double.infinity,
                       color: const Color(0xFFA78A52), // Header background color
                       padding: const EdgeInsets.symmetric(
@@ -189,49 +218,51 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                                 }
                                 return null;
                               },
-                            ),               
+                            ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
                                 Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.white,
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _selectedCountryCode,
-                                    items: _countryCodes
-                                        .map(
-                                          (code) => DropdownMenuItem(
-                                            value: code,
-                                            child: Text(code,
-                                                style: const TextStyle(
-                                                    fontSize: 16)),
-                                          ),
-                                        )
-                                        .toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedCountryCode = value!;
-                                      });
-                                    },
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.white,
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _selectedCountryCode,
+                                      items: _countryCodes
+                                          .map(
+                                            (code) => DropdownMenuItem(
+                                              value: code,
+                                              child: Text(code,
+                                                  style: const TextStyle(
+                                                      fontSize: 16)),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedCountryCode = value!;
+                                        });
+                                      },
+                                    ),
                                   ),
                                 ),
-                              ),
                               ],
                             ),
-                            const SizedBox(height: 16,),
+                            const SizedBox(
+                              height: 16,
+                            ),
                             Text(
-                                'Read T’s and C’s',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFFA78A52),
-                                ),
+                              'Read T’s and C’s',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFFA78A52),
                               ),
+                            ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
@@ -274,7 +305,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                                       ),
                                     ),
                                   ),
-                                   const SizedBox(height: 24),
+                            const SizedBox(height: 24),
                           ],
                         ),
                       ),
@@ -283,7 +314,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                 ),
               ),
             ),
-         // Footer Section
+            // Footer Section
             Container(
               margin: const EdgeInsets.symmetric(
                   horizontal: 16), // Add margin to start and end
@@ -301,7 +332,10 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                 children: [
                   const Text(
                     '©Otela',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF113293),fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF113293),
+                        fontWeight: FontWeight.bold),
                   ),
                   Row(
                     children: [
@@ -326,10 +360,9 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                         child: const Text(
                           'Legal',
                           style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold
-                          ),
+                              color: Color(0xFF113293),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -340,10 +373,9 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                         child: const Text(
                           'Contact',
                           style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold
-                          ),
+                              color: Color(0xFF113293),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -351,7 +383,6 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                 ],
               ),
             )
-
           ],
         ),
       ),

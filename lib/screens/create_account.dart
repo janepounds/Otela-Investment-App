@@ -73,8 +73,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       // );
 
       //save first name in shared preferences
+    final String phoneNo = '$_selectedCountryCode ${_phoneController.text.trim()}';
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('firstName', _firstNameController.text.trim());
+    await prefs.setString('phone', phoneNo);
 
      // Navigator.pushReplacementNamed(context, '/login');
 
@@ -113,7 +115,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => VerificationScreen(verificationId),
+            builder: (context) => VerificationScreen(verificationId, caller: "Create Account"),
           ),
         );
       },
