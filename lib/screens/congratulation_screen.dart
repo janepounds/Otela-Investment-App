@@ -27,7 +27,7 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
     setState(() {
       userName =
           prefs.getString('firstName') ?? 'User'; // Default to "User" if null
-      stokvel = prefs.getString('stokvel') ?? 'Default';
+      stokvel = prefs.getString('stokvelName') ?? 'Default';
     });
   }
 
@@ -117,14 +117,10 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => StokvelDetailscreen()),
+                                  builder: (context) => StokvelDetailsScreen()),
                             );
                           }
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => DashboardScreen()),
-                          );
+
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFFD8A85B),

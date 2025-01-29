@@ -1,15 +1,28 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class StokvelDetailscreen extends StatefulWidget {
-  const StokvelDetailscreen({super.key});
+class StokvelDetailsScreen extends StatefulWidget {
+  const StokvelDetailsScreen({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
   _StokvelDetailsScreenState createState() => _StokvelDetailsScreenState();
 }
 
-class _StokvelDetailsScreenState extends State<StokvelDetailscreen> {
-
+class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
+  Stream<QuerySnapshot> fetchUserStokvels() {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return FirebaseFirestore.instance
+          .collection('stokvel') // Ensure this is the correct collection
+          .doc(user.uid)
+          .collection('user_stokvels')
+          .snapshots();
+    } else {
+      return const Stream.empty();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,68 +30,88 @@ class _StokvelDetailsScreenState extends State<StokvelDetailscreen> {
       body: SafeArea(
         child: Column(
           children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    // Header Section
-                    Container(
-                      width: double.infinity,
-                      color: const Color(0xFFA78A52), // Header background color
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                'Stokvel',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Finish setting up your stokvel',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Icon(
-                            Icons.menu, // Example menu icon
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const ProgressStepper(),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Stokvel Details",
-                      style: TextStyle(
+            // Header Section
+            Container(
+              width: double.infinity,
+              color: const Color(0xFFA78A52),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Stokvel',
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue),
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Finish setting up your stokvel',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Icon(
+                    Icons.menu,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            const ProgressStepper(),
+            const SizedBox(height: 20),
+            const Text(
+              "Stokvel Details",
+              style: TextStyle(
+                  fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+            ),
+            const SizedBox(height: 20),
+
+            // Fetch Stokvel Data
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: fetchUserStokvels(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  var stokvelDocs = snapshot.data!.docs;
+
+                  if (stokvelDocs.isEmpty) {
+                    return const Center(child: Text("No Stokvels Found"));
+                  }
+
+                  // Fetch the first Stokvel
+                  var stokvel = stokvelDocs.first;
+
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        buildInputField("Stokvel/Club", stokvel['stokvelName'] ?? "N/A"),
+                        buildInputField("Registration Number",
+                            stokvel['stockvelNumber'] ?? "N/A"),
+                        buildInputField("Stokvel Admin",
+                            "Test"),
+                        buildPhoneInputField(),
+                        const SizedBox(height: 20),
+                        buildMembersList(),
+                        const SizedBox(height: 20),
+                        buildSaveButton(),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    buildInputField("Stokvel/Club", "Mbokodo Stokvel"),
-                    buildInputField("Registration Number", "Reg: cn654789321"),
-                    buildInputField("Stokvel Admin", "Linda Omara-Koledade"),
-                    buildPhoneInputField(),
-                    const SizedBox(height: 20),
-                    buildMembersList(),
-                    const SizedBox(height: 20),
-                    buildSaveButton()
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],
@@ -88,62 +121,32 @@ class _StokvelDetailsScreenState extends State<StokvelDetailscreen> {
   }
 
   Widget buildInputField(String title, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
-        const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade300),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const SizedBox(height: 5),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Text(value,
+                style: const TextStyle(fontSize: 16, color: Colors.black)),
           ),
-          child: Text(value,
-              style: const TextStyle(fontSize: 16, color: Colors.black)),
-        ),
-        const SizedBox(height: 10),
-      ],
+        ],
+      ),
     );
   }
 
   Widget buildPhoneInputField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text("Admin Number",
-            style: TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
-        const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.grey.shade300),
-          ),
-          child: Row(
-            children: [
-              Image.network("https://flagcdn.com/w40/za.png",
-                  width: 25), // South Africa Flag
-              const SizedBox(width: 10),
-              const Text("+27",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black)),
-              const SizedBox(width: 10),
-              const Text("73 987 6543",
-                  style: TextStyle(fontSize: 16, color: Colors.black)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-      ],
-    );
+    return buildInputField("Admin Number", "+27 73 987 6543");
   }
 
   Widget buildMembersList() {

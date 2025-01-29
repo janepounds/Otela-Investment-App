@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/screens/bank_details_screen.dart';
-import 'package:otela_investment_club_app/screens/congratulation_screen.dart';
 import 'package:otela_investment_club_app/screens/create_account.dart';
 import 'package:otela_investment_club_app/screens/create_club.dart';
 import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
@@ -10,6 +9,7 @@ import 'package:otela_investment_club_app/screens/investing/fund_details_screen.
 import 'package:otela_investment_club_app/screens/investing/payment_method_screen.dart';
 import 'package:otela_investment_club_app/screens/investing/select_amount_screen.dart';
 import 'package:otela_investment_club_app/screens/investing/success_screen.dart';
+import 'package:otela_investment_club_app/screens/join_club.dart';
 import 'package:otela_investment_club_app/screens/login_screen.dart';
 import 'package:otela_investment_club_app/screens/main_screen.dart';
 import 'package:otela_investment_club_app/screens/portfolio.dart';
@@ -46,7 +46,8 @@ void main() async{
       //create new club
       '/createStokvel': (context) => CreateStokvelScreen(),
       '/uploadDocuments': (context) => UploadDocumentScreen(),
-      '/bankDetails': (context) => BankDetailscreen()
+      '/bankDetails': (context) => BankDetailscreen(),
+      '/joinStokvel': (context) => JoinStokvelScreen()
 
     },
   ));

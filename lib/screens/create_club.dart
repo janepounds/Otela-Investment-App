@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:otela_investment_club_app/screens/login_screen.dart';
+
 import 'package:otela_investment_club_app/screens/verification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,11 +29,12 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
 
   bool _isLoading = false;
   bool _isChecked = false;
-  String _selectedCountryCode = '+256';
-  final List<String> _countryCodes = ['+256', '+254', '+270', '+291', '+261'];
+  String? selectedPurpose;
+  final TextEditingController accountNumberController = TextEditingController();
 
+  final List<String> purposes = ["Test", "Investment", "Growth"];
 
-   @override
+  @override
   void initState() {
     super.initState();
     getUserName();
@@ -42,11 +43,9 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
   Future<void> getUserName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      phone =
-          prefs.getString('phone') ?? 'User'; // Default to "User" if null
+      phone = prefs.getString('phone') ?? 'User'; // Default to "User" if null
     });
   }
-
 
   Future<void> _createStokvel() async {
     if (!_formKey.currentState!.validate() || !_isChecked) {
@@ -74,7 +73,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
             .add({
           'stokvelName': _stokvelNameController.text.trim(),
           'stockvelNumber': _stokvelNumberController.text.trim(),
-          'stockvelPurpose': _stokvelPurposeController.text.trim(),
+          'stockvelPurpose': selectedPurpose,
           'createdAt': Timestamp.now(),
         }).then((value) {
           Fluttertoast.showToast(
@@ -116,7 +115,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
 
   void sendOTP() async {
     await _auth.verifyPhoneNumber(
-      phoneNumber:  phone,
+      phoneNumber: phone,
       verificationCompleted: (PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
         // Navigate to the next screen
@@ -134,7 +133,8 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => VerificationScreen(verificationId, caller: "Create Club"),
+            builder: (context) =>
+                VerificationScreen(verificationId, caller: "Create Club"),
           ),
         );
       },
@@ -220,39 +220,13 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                               },
                             ),
                             const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.grey),
-                                    borderRadius: BorderRadius.circular(20),
-                                    color: Colors.white,
-                                  ),
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 8),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: _selectedCountryCode,
-                                      items: _countryCodes
-                                          .map(
-                                            (code) => DropdownMenuItem(
-                                              value: code,
-                                              child: Text(code,
-                                                  style: const TextStyle(
-                                                      fontSize: 16)),
-                                            ),
-                                          )
-                                          .toList(),
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _selectedCountryCode = value!;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            buildDropdownField(
+                                "Purpose of Stokvel", selectedPurpose, purposes,
+                                (value) {
+                              setState(() {
+                                selectedPurpose = value;
+                              });
+                            }),
                             const SizedBox(
                               height: 16,
                             ),
@@ -407,6 +381,42 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
           borderRadius: BorderRadius.circular(20),
         ),
       ),
+    );
+  }
+
+  Widget buildDropdownField(String title, String? selectedValue,
+      List<String> items, ValueChanged<String?> onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: const TextStyle(
+                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 5),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: selectedValue,
+              hint: Text(title, style: const TextStyle(color: Colors.grey)),
+              isExpanded: true,
+              items: items.map((String item) {
+                return DropdownMenuItem(
+                  value: item,
+                  child: Text(item),
+                );
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
     );
   }
 }

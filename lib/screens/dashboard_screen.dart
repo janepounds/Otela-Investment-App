@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:otela_investment_club_app/screens/join_club.dart';
 import 'package:otela_investment_club_app/screens/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -63,7 +64,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       alignment: Alignment.topRight,
                       child: GestureDetector(
                         onTap: logout,
-                        child: Icon(Icons.menu, color: Color(0xFF113293), size: 30),
+                        child: Icon(Icons.menu,
+                            color: Color(0xFF113293), size: 30),
                       ),
                     ),
                     SizedBox(height: 200),
@@ -126,7 +128,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => JoinStokvelScreen()),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFF113293),
                           padding: EdgeInsets.symmetric(
@@ -138,8 +146,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       SizedBox(height: 15),
                       ElevatedButton(
                         onPressed: () {
-                           // Navigate to the next screen (e.g., Home)
-                       Navigator.pushReplacementNamed(context, '/createStokvel');
+                          // Navigate to the next screen (e.g., Home)
+                          Navigator.pushReplacementNamed(
+                              context, '/createStokvel');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFF113293),
