@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:otela_investment_club_app/screens/login_screen.dart';
 import 'package:otela_investment_club_app/screens/verification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,34 +16,41 @@ class JoinStokvelScreen extends StatefulWidget {
 class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
   final _formKey = GlobalKey<FormState>();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _idPassportController = TextEditingController();
-  final TextEditingController _stokvelNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  String verificationId = '';
 
+  String verificationId = '';
   bool _isLoading = false;
   bool _isChecked = false;
   String _selectedCountryCode = '+256';
+  String? selectedStokvel;
+  String? selectedStockvelId;
+
   final List<String> _countryCodes = ['+256', '+254', '+270', '+291', '+261'];
 
-   Stream<QuerySnapshot> fetchUserStokvels() {
+  Stream<List<Map<String, dynamic>>> fetchStokvels() {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       return FirebaseFirestore.instance
-          .collection('stokvel') // Ensure this is the correct collection
-          .doc(user.uid)
-          .collection('user_stokvels')
-          .snapshots();
+          .collection('stokvels') // Fetch all stokvels
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs.map((doc) {
+          return {
+            'id': doc.id, // Stokvel ID
+            'name': doc['stokvelName'], // Stokvel Name
+          };
+        }).toList();
+      });
     } else {
       return const Stream.empty();
     }
   }
 
-  Future<void> _signUp() async {
+  Future<void> _joinSkovel(String s) async {
     if (!_formKey.currentState!.validate() || !_isChecked) {
       if (!_isChecked) {
         Fluttertoast.showToast(
@@ -60,23 +66,43 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
       _isLoading = true;
     });
 
+    //save selected stokvel in shared preferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('stokvelName', selectedStokvel!);
+
+    //save user under members stokvel
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        // Store member information inside the selected stokvel's "members" subcollection
+        await FirebaseFirestore.instance
+            .collection('stokvels')
+            .doc(s) // Find the stokvel
+            .collection('members') // Go to members subcollection
+            .doc(user.uid) // Use user ID as member ID
+            .set({
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          'phone': '$_selectedCountryCode ${_phoneController.text.trim()}',
+          'joinedAt': Timestamp.now(),
+        });
+
+        Fluttertoast.showToast(
+          msg: 'Successfully joined the Stokvel!',
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+        );
+      } catch (error) {
+        print("Error joining stokvel: $error");
+        Fluttertoast.showToast(
+          msg: 'Error joining stokvel. Try again!',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+    }
+
     try {
-    
-
-      //send otp and navigate to verifcation screen
-
-
-      // Fluttertoast.showToast(
-      //   msg: 'Account created successfully!',
-      //   backgroundColor: Colors.green,
-      //   textColor: Colors.white,
-      // );
-
-      //save first name in shared preferences
-   
-
-     // Navigator.pushReplacementNamed(context, '/login');
-
       sendOTP();
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(
@@ -91,13 +117,11 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
     }
   }
 
-
-   void sendOTP() async {
+  void sendOTP() async {
     await _auth.verifyPhoneNumber(
       phoneNumber: '$_selectedCountryCode ${_phoneController.text.trim()}',
       verificationCompleted: (PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
-        // Navigate to the next screen
       },
       verificationFailed: (FirebaseAuthException e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -108,11 +132,11 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
         setState(() {
           this.verificationId = verificationId;
         });
-        // Navigate to OTP screen
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => VerificationScreen(verificationId, caller: "Create Account"),
+            builder: (context) =>
+                VerificationScreen(verificationId, caller: "Create Stokvel"),
           ),
         );
       },
@@ -131,9 +155,9 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
                 child: Column(
                   children: [
                     // Header Section
-                     Container(
+                    Container(
                       width: double.infinity,
-                      color: const Color(0xFFA78A52), // Header background color
+                      color: const Color(0xFFA78A52),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 24),
                       child: Row(
@@ -160,11 +184,7 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
                               ),
                             ],
                           ),
-                          const Icon(
-                            Icons.menu, // Example menu icon
-                            color: Colors.white,
-                            size: 30,
-                          ),
+                          const Icon(Icons.menu, color: Colors.white, size: 30),
                         ],
                       ),
                     ),
@@ -179,133 +199,120 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
                             _buildTextField(
                               labelText: 'First Name',
                               controller: _firstNameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your first name.';
-                                }
-                                return null;
-                              },
                             ),
                             const SizedBox(height: 16),
                             _buildTextField(
                               labelText: 'Last Name',
                               controller: _lastNameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your last name.';
-                                }
-                                return null;
-                              },
                             ),
                             const SizedBox(height: 16),
                             _buildTextField(
                               labelText: 'ID / Passport',
                               controller: _idPassportController,
-                              keyboardType: TextInputType.text,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your email.';
-                                }
-                                return null;
-                              },
                             ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
                                 Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.white,
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _selectedCountryCode,
-                                    items: _countryCodes
-                                        .map(
-                                          (code) => DropdownMenuItem(
-                                            value: code,
-                                            child: Text(code,
-                                                style: const TextStyle(
-                                                    fontSize: 16)),
-                                          ),
-                                        )
-                                        .toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedCountryCode = value!;
-                                      });
-                                    },
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.white,
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _selectedCountryCode,
+                                      items: _countryCodes.map((code) {
+                                        return DropdownMenuItem(
+                                          value: code,
+                                          child: Text(code,
+                                              style: const TextStyle(
+                                                  fontSize: 16)),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedCountryCode = value!;
+                                        });
+                                      },
+                                    ),
                                   ),
                                 ),
-                              ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildTextField(
                                     labelText: 'Phone Number',
                                     controller: _phoneController,
                                     keyboardType: TextInputType.phone,
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your phone number.';
-                                      }
-                                      return null;
-                                    },
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                          
-                            const SizedBox(height: 16),
-                          
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: _isChecked,
-                                  onChanged: (value) {
+
+                            // Stokvel Dropdown
+                            StreamBuilder<List<Map<String, dynamic>>>(
+                              stream: fetchStokvels(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return CircularProgressIndicator();
+                                }
+
+                                List<Map<String, dynamic>> stokvels =
+                                    snapshot.data!;
+
+                                return DropdownButtonFormField<String>(
+                                  value: selectedStockvelId,
+                                  hint: Text("Select a Stokvel"),
+                                  onChanged: (String? newValue) {
                                     setState(() {
-                                      _isChecked = value!;
+                                      selectedStockvelId =
+                                          newValue; // Save selected Stokvel ID
                                     });
                                   },
-                                ),
-                                const Expanded(
-                                  child: Text(
-                                    'I agree to the Terms and Conditions',
-                                  ),
-                                ),
-                              ],
+                                  items: stokvels
+                                      .map<DropdownMenuItem<String>>((stokvel) {
+                                    return DropdownMenuItem<String>(
+                                      value: stokvel['id'], // Stokvel ID
+                                      child:
+                                          Text(stokvel['name']), // Stokvel Name
+                                    );
+                                  }).toList(),
+                                );
+                              },
+                            ),
+
+                            const SizedBox(height: 16),
+                            CheckboxListTile(
+                              value: _isChecked,
+                              onChanged: (value) {
+                                setState(() {
+                                  _isChecked = value!;
+                                });
+                              },
+                              title: const Text(
+                                  'I agree to the Terms and Conditions'),
                             ),
                             const SizedBox(height: 24),
                             _isLoading
                                 ? const CircularProgressIndicator()
                                 : ElevatedButton(
-                                    onPressed: _signUp,
+                                    onPressed: () {
+                                      if (selectedStockvelId != null) {
+                                        _joinSkovel(
+                                            selectedStockvelId!); // Pass stokvelId here
+                                      } else {
+                                        Fluttertoast.showToast(
+                                            msg: "Please select a Stokvel!");
+                                      }
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFFA78A52),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 40,
-                                        vertical: 12,
-                                      ),
                                     ),
-                                    child: const Text(
-                                      'Join Stokvel',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
+                                    child: const Text('Join Stokvel'),
                                   ),
-                                   const SizedBox(height: 24),
-
-                   
                           ],
                         ),
                       ),
@@ -314,93 +321,19 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
                 ),
               ),
             ),
-         // Footer Section
-            Container(
-              margin: const EdgeInsets.symmetric(
-                  horizontal: 16), // Add margin to start and end
-              decoration: const BoxDecoration(
-                color: Color(0xFFF4F4F4), // Footer background color
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              padding:
-                  const EdgeInsets.symmetric(vertical: 12), // Vertical padding
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text(
-                    '©Otela',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF113293),fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          // Navigate to Privacy
-                        },
-                        child: const Text(
-                          'Privacy',
-                          style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      GestureDetector(
-                        onTap: () {
-                          // Navigate to Legal
-                        },
-                        child: const Text(
-                          'Legal',
-                          style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      GestureDetector(
-                        onTap: () {
-                          // Navigate to Contact
-                        },
-                        child: const Text(
-                          'Contact',
-                          style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            )
-
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTextField({
-    required String labelText,
-    required TextEditingController controller,
-    bool obscureText = false,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-  }) {
+  Widget _buildTextField(
+      {required String labelText,
+      required TextEditingController controller,
+      TextInputType keyboardType = TextInputType.text}) {
     return TextFormField(
       controller: controller,
-      obscureText: obscureText,
       keyboardType: keyboardType,
-      validator: validator,
       decoration: InputDecoration(
         labelText: labelText,
         border: OutlineInputBorder(

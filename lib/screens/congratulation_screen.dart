@@ -90,7 +90,9 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                       Text(
                         widget.caller == "Create Account"
                             ? "You have successfully created your account!"
-                            : "$stokvel has been successfully registered!",
+                            : widget.caller == "Create Stokvel"
+                                ? "You have successfully joined $stokvel Stokvel!!"
+                                : "$stokvel has been successfully registered!",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Color(0xFF113293),
@@ -112,15 +114,20 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                               MaterialPageRoute(
                                   builder: (context) => DashboardScreen()),
                             );
-                          } else {
+                          } else if(widget.caller == "Create Stokvel"){
                             // Navigate to StockDetails if called by any other screen
                             Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => PersonalDetailsScreen()),
+                            );
+                          }else{
+                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => StokvelDetailsScreen()),
                             );
                           }
-
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFFD8A85B),
@@ -128,7 +135,13 @@ class _CongratulationsScreenState extends State<CongratulationsScreen> {
                               horizontal: 40, vertical: 12),
                         ),
                         child:
-                            Text('Next', style: TextStyle(color: Colors.white)),
+                            Text(
+                           widget.caller == "Create Account"
+                            ? "Next"
+                            : widget.caller == "Create Stokvel"
+                                ? "My Profile"
+                                : "STOKVEL PROFILE",
+                                 style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),

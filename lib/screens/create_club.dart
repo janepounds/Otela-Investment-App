@@ -21,8 +21,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
   final TextEditingController _stokvelNameController = TextEditingController();
   final TextEditingController _stokvelNumberController =
       TextEditingController();
-  final TextEditingController _stokvelPurposeController =
-      TextEditingController();
+  
 
   String verificationId = '';
   String phone = '';
@@ -64,27 +63,31 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     });
 
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('stokvel')
-            .doc(user.uid)
-            .collection('user_stokvels')
-            .add({
-          'stokvelName': _stokvelNameController.text.trim(),
-          'stockvelNumber': _stokvelNumberController.text.trim(),
-          'stockvelPurpose': selectedPurpose,
-          'createdAt': Timestamp.now(),
-        }).then((value) {
-          Fluttertoast.showToast(
-            msg: 'Saved Successfulled',
-            backgroundColor: Colors.green,
-            textColor: Colors.white,
-          );
-        }).catchError((error) {
-          print("Failed to add stokvel: $error");
-        });
-      }
+   User? user = FirebaseAuth.instance.currentUser;
+if (user != null) {
+  DocumentReference stokvelRef = await FirebaseFirestore.instance
+      .collection('stokvels') // Top-level collection
+      .add({
+    'stokvelName': _stokvelNameController.text.trim(),
+    'stokvelNumber': _stokvelNumberController.text.trim(),
+    'stokvelPurpose': selectedPurpose,
+    'createdBy': user.uid, // Store the creator's userId
+    'createdAt': Timestamp.now(),
+  });
+
+  // Add creator as a member and admin in the stokvel
+  await stokvelRef.collection('members').doc(user.uid).set({
+    'role': 'admin', // Creator is the admin
+    'joinedAt': Timestamp.now(),
+  });
+
+  Fluttertoast.showToast(
+    msg: 'Stokvel Created Successfully',
+    backgroundColor: Colors.green,
+    textColor: Colors.white,
+  );
+}
+
       //send otp and navigate to verifcation screen
 
       // Fluttertoast.showToast(
