@@ -65,6 +65,19 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     try {
    User? user = FirebaseAuth.instance.currentUser;
 if (user != null) {
+
+  // Reference to Firestore
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  // Get user details from Firestore
+  DocumentSnapshot userDoc = await firestore.collection('users').doc(user.uid).get();
+
+  if (userDoc.exists) {
+    // Extract user details
+    String memberFirstName = userDoc['firstName'] ?? 'Unknown';
+    String memberLastName = userDoc['lastName'] ?? 'Unknown';
+    String memberPhone = userDoc['phone'] ?? 'Unknown';
+  
   DocumentReference stokvelRef = await FirebaseFirestore.instance
       .collection('stokvels') // Top-level collection
       .add({
@@ -73,11 +86,16 @@ if (user != null) {
     'stokvelPurpose': selectedPurpose,
     'createdBy': user.uid, // Store the creator's userId
     'createdAt': Timestamp.now(),
+      
   });
 
   // Add creator as a member and admin in the stokvel
   await stokvelRef.collection('members').doc(user.uid).set({
     'role': 'admin', // Creator is the admin
+    'firstName': memberFirstName,
+    'lastName': memberLastName,
+    'phone': memberPhone,
+     'status': 'Pending',
     'joinedAt': Timestamp.now(),
   });
 
@@ -86,6 +104,7 @@ if (user != null) {
     backgroundColor: Colors.green,
     textColor: Colors.white,
   );
+  }
 }
 
       //send otp and navigate to verifcation screen

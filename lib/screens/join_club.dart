@@ -31,6 +31,8 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
 
   final List<String> _countryCodes = ['+256', '+254', '+270', '+291', '+261'];
 
+  List<Map<String, dynamic>> stokvelList = []; // Store fetched stokvels
+
   Stream<List<Map<String, dynamic>>> fetchStokvels() {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -260,19 +262,23 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
                                   return CircularProgressIndicator();
                                 }
 
-                                List<Map<String, dynamic>> stokvels =
-                                    snapshot.data!;
+                                stokvelList =
+                                    snapshot.data!; // Save the fetched stokvels
 
                                 return DropdownButtonFormField<String>(
                                   value: selectedStockvelId,
                                   hint: Text("Select a Stokvel"),
                                   onChanged: (String? newValue) {
                                     setState(() {
-                                      selectedStockvelId =
-                                          newValue; // Save selected Stokvel ID
+                                      selectedStockvelId = newValue;
+                                      selectedStokvel = stokvelList.firstWhere(
+                                        (stokvel) => stokvel['id'] == newValue,
+                                        orElse: () =>
+                                            {'name': ''}, // Default value
+                                      )['name'];
                                     });
                                   },
-                                  items: stokvels
+                                  items: stokvelList
                                       .map<DropdownMenuItem<String>>((stokvel) {
                                     return DropdownMenuItem<String>(
                                       value: stokvel['id'], // Stokvel ID
@@ -301,6 +307,7 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
                                 : ElevatedButton(
                                     onPressed: () {
                                       if (selectedStockvelId != null) {
+                                        // Find the selected Stokvel Name using its ID
                                         _joinSkovel(
                                             selectedStockvelId!); // Pass stokvelId here
                                       } else {

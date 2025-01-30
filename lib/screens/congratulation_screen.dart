@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
+import 'package:otela_investment_club_app/screens/personal_details_screen.dart';
 import 'package:otela_investment_club_app/screens/stokvel_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

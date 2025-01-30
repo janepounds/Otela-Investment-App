@@ -12,6 +12,9 @@ import 'package:otela_investment_club_app/screens/investing/success_screen.dart'
 import 'package:otela_investment_club_app/screens/join_club.dart';
 import 'package:otela_investment_club_app/screens/login_screen.dart';
 import 'package:otela_investment_club_app/screens/main_screen.dart';
+import 'package:otela_investment_club_app/screens/my_profile_bank_details_screen.dart';
+import 'package:otela_investment_club_app/screens/personal_details_screen.dart';
+import 'package:otela_investment_club_app/screens/personal_kyc_screen.dart';
 import 'package:otela_investment_club_app/screens/portfolio.dart';
 import 'package:otela_investment_club_app/screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -47,7 +50,12 @@ void main() async{
       '/createStokvel': (context) => CreateStokvelScreen(),
       '/uploadDocuments': (context) => UploadDocumentScreen(),
       '/bankDetails': (context) => BankDetailscreen(),
-      '/joinStokvel': (context) => JoinStokvelScreen()
+      '/joinStokvel': (context) => JoinStokvelScreen(),
+
+      //personal
+      '/kyc': (context) => PersonalKycScreen(),
+      '/personalDetails': (context) => PersonalDetailsScreen(),
+      '/bank': (context) => MyProfileBankDetailScreen(),
 
     },
   ));

@@ -94,7 +94,7 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
                   }
 
                   // Fetch the first Stokvel
-                  var stokvel = stokvelDocs.first;
+                  var stokvel = stokvelDocs.last;
                   String stokvelId = stokvel.id; // Get stokvel ID
 
                   return SingleChildScrollView(
@@ -103,7 +103,7 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
                         buildInputField(
                             "Stokvel/Club", stokvel['stokvelName'] ?? "N/A"),
                         buildInputField("Registration Number",
-                            stokvel['stockvelNumber'] ?? "N/A"),
+                            stokvel['stokvelNumber'] ?? "N/A"),
                         buildInputField("Stokvel Admin", "Test"),
                         buildPhoneInputField(),
                         const SizedBox(height: 20),

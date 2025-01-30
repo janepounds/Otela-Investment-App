@@ -6,6 +6,7 @@ class AnimatedScreens extends StatefulWidget {
   const AnimatedScreens({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _AnimatedScreensState createState() => _AnimatedScreensState();
 }
 

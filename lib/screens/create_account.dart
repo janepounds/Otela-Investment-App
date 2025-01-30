@@ -23,7 +23,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   String verificationId = '';
 
@@ -60,11 +61,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         'lastName': _lastNameController.text.trim(),
         'email': _emailController.text.trim(),
         'phone': '$_selectedCountryCode ${_phoneController.text.trim()}',
-        'createdAt': DateTime.now(),
+        'createdAt': Timestamp.now(), // Firestore timestamp
       });
 
       //send otp and navigate to verifcation screen
-
 
       // Fluttertoast.showToast(
       //   msg: 'Account created successfully!',
@@ -73,12 +73,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       // );
 
       //save first name in shared preferences
-    final String phoneNo = '$_selectedCountryCode ${_phoneController.text.trim()}';
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('firstName', _firstNameController.text.trim());
-    await prefs.setString('phone', phoneNo);
+      final String phoneNo =
+          '$_selectedCountryCode ${_phoneController.text.trim()}';
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('firstName', _firstNameController.text.trim());
+      await prefs.setString('phone', phoneNo);
 
-     // Navigator.pushReplacementNamed(context, '/login');
+      // Navigator.pushReplacementNamed(context, '/login');
 
       sendOTP();
     } on FirebaseAuthException catch (e) {
@@ -94,8 +95,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     }
   }
 
-
-   void sendOTP() async {
+  void sendOTP() async {
     await _auth.verifyPhoneNumber(
       phoneNumber: '$_selectedCountryCode ${_phoneController.text.trim()}',
       verificationCompleted: (PhoneAuthCredential credential) async {
@@ -115,7 +115,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => VerificationScreen(verificationId, caller: "Create Account"),
+            builder: (context) =>
+                VerificationScreen(verificationId, caller: "Create Account"),
           ),
         );
       },
@@ -134,7 +135,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 child: Column(
                   children: [
                     // Header Section
-                     Container(
+                    Container(
                       width: double.infinity,
                       color: const Color(0xFFA78A52), // Header background color
                       padding: const EdgeInsets.symmetric(
@@ -220,34 +221,34 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                             Row(
                               children: [
                                 Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(20),
-                                  color: Colors.white,
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _selectedCountryCode,
-                                    items: _countryCodes
-                                        .map(
-                                          (code) => DropdownMenuItem(
-                                            value: code,
-                                            child: Text(code,
-                                                style: const TextStyle(
-                                                    fontSize: 16)),
-                                          ),
-                                        )
-                                        .toList(),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _selectedCountryCode = value!;
-                                      });
-                                    },
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: Colors.grey),
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.white,
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 8),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _selectedCountryCode,
+                                      items: _countryCodes
+                                          .map(
+                                            (code) => DropdownMenuItem(
+                                              value: code,
+                                              child: Text(code,
+                                                  style: const TextStyle(
+                                                      fontSize: 16)),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _selectedCountryCode = value!;
+                                        });
+                                      },
+                                    ),
                                   ),
                                 ),
-                              ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: _buildTextField(
@@ -333,35 +334,35 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                       ),
                                     ),
                                   ),
-                                   const SizedBox(height: 24),
+                            const SizedBox(height: 24),
 
-                          // Already Have an Account? Sign In
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text(
-                                'Already have an account? ',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  // Navigate to Sign In screen
-                                     Navigator.pushReplacement(
+                            // Already Have an Account? Sign In
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text(
+                                  'Already have an account? ',
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    // Navigate to Sign In screen
+                                    Navigator.pushReplacement(
                                         context,
-                                        MaterialPageRoute(builder: (context) => LoginScreen())
-                                     );
-                                      
-                                },
-                                child: const Text(
-                                  'Sign In!',
-                                  style: TextStyle(
-                                    color: Color(0xFF113293),
-                                    fontWeight: FontWeight.bold,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                LoginScreen()));
+                                  },
+                                  child: const Text(
+                                    'Sign In!',
+                                    style: TextStyle(
+                                      color: Color(0xFF113293),
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          )
+                              ],
+                            )
                           ],
                         ),
                       ),
@@ -370,7 +371,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
               ),
             ),
-         // Footer Section
+            // Footer Section
             Container(
               margin: const EdgeInsets.symmetric(
                   horizontal: 16), // Add margin to start and end
@@ -388,7 +389,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 children: [
                   const Text(
                     '©Otela',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF113293),fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF113293),
+                        fontWeight: FontWeight.bold),
                   ),
                   Row(
                     children: [
@@ -413,10 +417,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         child: const Text(
                           'Legal',
                           style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold
-                          ),
+                              color: Color(0xFF113293),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -427,10 +430,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                         child: const Text(
                           'Contact',
                           style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold
-                          ),
+                              color: Color(0xFF113293),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -438,7 +440,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ],
               ),
             )
-
           ],
         ),
       ),

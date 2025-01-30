@@ -81,7 +81,11 @@ class FinalConfirmationScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 30),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          //navigate to main
+                           Navigator.popUntil(context, ModalRoute.withName('/main'));
+
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xFFD8A85B),
                           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
