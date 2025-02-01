@@ -1,49 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-void main() {
-  runApp(const InvestmentDashboardApp());
-}
 
-class InvestmentDashboardApp extends StatelessWidget {
-  const InvestmentDashboardApp({super.key});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Colors.blue,
-      ),
-      home: const InvestmentDashboardScreen(),
-    );
-  }
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class InvestmentDashboardScreen extends StatefulWidget {
-  const InvestmentDashboardScreen({super.key});
-
-  @override
-  State<InvestmentDashboardScreen> createState() => _InvestmentDashboardScreenState();
-}
-
-class _InvestmentDashboardScreenState extends State<InvestmentDashboardScreen> {
+class _MainScreenState extends State<MainScreen> {
   int _currentCarouselIndex = 0;
 
   final List<Map<String, String>> featuredInvestments = [
-    {"title": "Growth", "image": "assets/growth.jpg"},
-    {"title": "Wealth", "image": "assets/wealth.jpg"},
-    {"title": "Savings", "image": "assets/savings.jpg"},
+    {"title": "Growth", "image": "assets/images/money_tree_bg.png"},
+    {"title": "Wealth", "image": "assets/images/money_tree_bg.png"},
+    {"title": "Savings", "image": "assets/images/money_tree_bg.png"},
   ];
 
   final List<Map<String, String>> recommendedInvestments = [
-    {"title": "Bonds", "image": "assets/bonds.jpg"},
-    {"title": "Strategic", "image": "assets/strategic.jpg"},
-    {"title": "Stocks", "image": "assets/stocks.jpg"},
+    {"title": "Bonds", "image": "assets/images/money_tree_bg.png"},
+    {"title": "Strategic", "image": "assets/images/money_tree_bg.png"},
+    {"title": "Stocks", "image": "assets/images/money_tree_bg.png"},
   ];
 
   final List<Map<String, String>> tailoredInvestments = [
-    {"title": "Lifestyle", "image": "assets/lifestyle.jpg"},
+    {"title": "Lifestyle", "image": "assets/images/money_tree_bg.png"},
   ];
 
   @override
@@ -54,11 +36,11 @@ class _InvestmentDashboardScreenState extends State<InvestmentDashboardScreen> {
         backgroundColor: const Color(0xFF17468A),
         title: Row(
           children: [
-            Image.asset("assets/logo.png", height: 24),
+            Image.asset("assets/images/logo_no_text.png", height: 24),
             const Spacer(),
             const CircleAvatar(
               radius: 18,
-              backgroundImage: AssetImage("assets/profile.jpg"),
+              backgroundImage: AssetImage("assets/images/logo_no_text.png"),
             ),
             const SizedBox(width: 16),
             const Icon(Icons.menu, color: Colors.white),

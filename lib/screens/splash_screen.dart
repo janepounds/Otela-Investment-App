@@ -1,26 +1,93 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:otela_investment_club_app/colors.dart';
+import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
+import 'package:otela_investment_club_app/screens/main_screen.dart';
 import 'animated_screens.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    Future.delayed(Duration(seconds: 3), () {
+  // ignore: library_private_types_in_public_api
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void> _checkNavigation() async {
+    //await Future.delayed(const Duration(seconds: 3)); // Simulating splash screen delay
+
+    User? user = _auth.currentUser;
+
+    if (user == null) {
+      // **🔹 User is NOT logged in → Go to Animated Screens**
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => AnimatedScreens()),
       );
+    } else {
+      // **🔹 Check if user has created or joined a Stokvel**
+      bool isMemberOrCreator = await _checkUserStokvelMembership(user.uid);
+
+      if (isMemberOrCreator) {
+        // **✅ User is part of a Stokvel → Navigate to Main Screen**
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen()),
+        );
+      } else {
+        // **🚀 User is logged in but NOT part of a Stokvel → Go to Dashboard**
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+        );
+      }
+    }
+  }
+
+  /// **Checks if the user has created OR joined a Stokvel**
+  Future<bool> _checkUserStokvelMembership(String userId) async {
+    try {
+      // 🔹 Check if the user has created a Stokvel
+      QuerySnapshot createdStokvels = await _firestore
+          .collection('stokvels')
+          .where('createdBy', isEqualTo: userId)
+          .get();
+
+      // 🔹 Check if the user has joined a Stokvel
+      QuerySnapshot joinedStokvels = await _firestore
+          .collectionGroup('members') // Searches all "members" subcollections
+          .where('userId',
+              isEqualTo: userId) // ✅ Use 'userId' instead of documentId
+          .get();
+
+      // ✅ If user has created OR joined a stokvel, return true
+      return createdStokvels.docs.isNotEmpty || joinedStokvels.docs.isNotEmpty;
+    } catch (e) {
+      print("Error checking stokvel membership: $e");
+      return false; // Assume no stokvel found in case of an error
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Future.delayed(Duration(seconds: 3), () {
+      _checkNavigation();
     });
 
     return Scaffold(
-      backgroundColor: Color(0xFFDCB765), // Background color
+      backgroundColor: AppColors.primaryAmber, // Background color
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Stack(
-              clipBehavior: Clip.none, // Allow the image to overflow if necessary
+              clipBehavior:
+                  Clip.none, // Allow the image to overflow if necessary
               alignment: Alignment.topCenter,
               children: [
                 // "otela" text
@@ -51,6 +118,13 @@ class SplashScreen extends StatelessWidget {
               'If you can dream it,\nTogether we can realize it!',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, color: Colors.white),
+            ),
+
+            const SizedBox(height: 8), // Add spacing before the line
+            Container(
+              width: 50, // Adjust line width as needed
+              height: 3, // Adjust thickness
+              color: AppColors.darBlue, // Use your background color
             ),
           ],
         ),

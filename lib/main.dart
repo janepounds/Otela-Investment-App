@@ -72,7 +72,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Otela App',
+      
       home: SplashScreen(),
+      theme: ThemeData(
+        fontFamily: 'Poppins', // Applies 'Poppins' globally to all text
+
+      
+      
+        ),
     );
  
   }

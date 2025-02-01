@@ -90,7 +90,7 @@ class _AnimatedScreensState extends State<AnimatedScreens> {
                       width: _currentIndex == index ? 12 : 8,
                       height: 8,
                       decoration: BoxDecoration(
-                        color: _currentIndex == index ? Color(0xFF113293) : Colors.amber,
+                        color: _currentIndex == index ? Color(0xFF113293) : Colors.amber.shade600,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -105,7 +105,7 @@ class _AnimatedScreensState extends State<AnimatedScreens> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
+                    backgroundColor: Colors.amber.shade600,
                     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   ),
                   child: Padding(

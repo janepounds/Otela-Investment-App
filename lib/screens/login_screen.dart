@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:otela_investment_club_app/screens/create_account.dart';
+import 'dashboard_screen.dart';
+import 'main_screen.dart';
+import 'create_account.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
   bool _isLoading = false;
 
   Future<void> _login() async {
@@ -36,11 +38,14 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Authenticate user with Firebase
+      // Authenticate user
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      User? user = userCredential.user;
+      if (user == null) throw FirebaseAuthException(message: "Login failed", code: '500');
 
       // Save email to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
@@ -52,8 +57,15 @@ class _LoginScreenState extends State<LoginScreen> {
         textColor: Colors.white,
       );
 
-      // Navigate to the next screen (e.g., Home)
-      Navigator.pushReplacementNamed(context, '/dashboard'); // Replace '/home' with your route
+      // Check if the user has created or joined a stokvel
+      bool hasStokvel = await userHasStokvel(user.uid);
+
+      // Navigate based on stokvel status
+      if (hasStokvel) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
+      } else {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardScreen()));
+      }
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(
         msg: e.message ?? "Login failed. Please try again.",
@@ -67,22 +79,43 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<bool> userHasStokvel(String userId) async {
+    try {
+      // Check if the user has created a stokvel
+      var createdStokvels = await FirebaseFirestore.instance
+          .collection('stokvel')
+          .where('createdBy', isEqualTo: userId)
+          .get();
+
+      if (createdStokvels.docs.isNotEmpty) return true;
+
+      // Check if user is a member of any stokvel
+      var memberOfStokvels = await FirebaseFirestore.instance
+          .collectionGroup('members')
+          .where(FieldPath.documentId, isEqualTo: userId)
+          .get();
+
+      return memberOfStokvels.docs.isNotEmpty;
+    } catch (e) {
+      print("Error checking stokvel status: $e");
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFDCB765), // Background color
+      backgroundColor: const Color(0xFFDCB765),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo at the top
               Stack(
-                clipBehavior: Clip.none, // Allow the image to overflow if necessary
+                clipBehavior: Clip.none,
                 alignment: Alignment.topCenter,
                 children: [
-                  // "otela" text
                   const Text(
                     'otela',
                     style: TextStyle(
@@ -92,20 +125,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Colors.white,
                     ),
                   ),
-                  // Image positioned at the top-right of "otela"
                   Positioned(
-                    top: -30, // Adjust this value as needed
-                    right: -40, // Adjust this value as needed
+                    top: -30,
+                    right: -40,
                     child: Image.asset(
-                      'assets/images/logo_no_text.png', // Replace with your image path
-                      width: 50, // Adjust the size of the image
+                      'assets/images/logo_no_text.png',
+                      width: 50,
                       height: 50,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 30),
-              // Login form
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -113,10 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       hintText: 'E-mail',
-                      hintStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      hintStyle: const TextStyle(color: Colors.white, fontSize: 16),
                       filled: true,
                       fillColor: const Color(0xFFa78a52),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -136,10 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Password',
-                      hintStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      hintStyle: const TextStyle(color: Colors.white, fontSize: 16),
                       filled: true,
                       fillColor: const Color(0xFFa78a52),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -176,7 +201,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          // Navigate to Registration Screen
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(builder: (context) => const CreateAccountScreen()),
@@ -184,9 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: const Text(
                           'Register Here',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
+                          style: TextStyle(color: Colors.white),
                         ),
                       ),
                     ],
@@ -199,16 +221,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: RichText(
                   text: const TextSpan(
                     text: 'By signing in, you agree to our ',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.white),
                     children: [
                       TextSpan(
                         text: 'Terms & Conditions.',
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                        ),
+                        style: TextStyle(decoration: TextDecoration.underline),
                       ),
                     ],
                   ),
