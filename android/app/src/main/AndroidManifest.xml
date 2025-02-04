@@ -1,9 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.otela_investment_club_app">
 
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+
+
     <application
         android:label="otela_investment_club_app"
-        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
         <!-- Main Activity -->
@@ -41,6 +45,8 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/notification_color" />
+
+
     </application>
 
     <!-- Permissions -->
@@ -49,6 +55,8 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+
 
     <!-- Queries for handling intents -->
     <queries>
@@ -57,4 +65,14 @@
             <data android:mimeType="text/plain" />
         </intent>
     </queries>
+
+    <queries>
+    <package android:name="com.android.contacts" />
+</queries>
+
+<queries>
+    <package android:name="com.whatsapp" />
+    <package android:name="com.whatsapp.w4b" /> <!-- For WhatsApp Business -->
+</queries>
+
 </manifest>

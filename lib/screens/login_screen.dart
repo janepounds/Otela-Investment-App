@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dashboard_screen.dart';
 import 'main_screen.dart';
 import 'create_account.dart';
 
@@ -64,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (hasStokvel) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
       } else {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DashboardScreen()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MainScreen()));
       }
     } on FirebaseAuthException catch (e) {
       Fluttertoast.showToast(
@@ -83,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // Check if the user has created a stokvel
       var createdStokvels = await FirebaseFirestore.instance
-          .collection('stokvel')
+          .collection('stokvels')
           .where('createdBy', isEqualTo: userId)
           .get();
 

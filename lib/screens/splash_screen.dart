@@ -2,9 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
-import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
+import 'package:otela_investment_club_app/screens/animated_screens.dart';
 import 'package:otela_investment_club_app/screens/main_screen.dart';
-import 'animated_screens.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,47 +30,55 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     } else {
       // **🔹 Check if user has created or joined a Stokvel**
-      bool isMemberOrCreator = await _checkUserStokvelMembership(user.uid);
+      // bool isMemberOrCreator = await _checkUserStokvelMembership(user.uid);
 
-      if (isMemberOrCreator) {
-        // **✅ User is part of a Stokvel → Navigate to Main Screen**
-        Navigator.pushReplacement(
+      // if (isMemberOrCreator) {
+      //   // **✅ User is part of a Stokvel → Navigate to Main Screen**
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => MainScreen()),
+      //   );
+      // } else {
+      //   // **🚀 User is logged in but NOT part of a Stokvel → Go to Dashboard**
+      //   Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => MainScreen()),
+      //   );
+      // }ss
+
+       Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MainScreen()),
         );
-      } else {
-        // **🚀 User is logged in but NOT part of a Stokvel → Go to Dashboard**
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
-        );
-      }
     }
   }
 
-  /// **Checks if the user has created OR joined a Stokvel**
-  Future<bool> _checkUserStokvelMembership(String userId) async {
-    try {
-      // 🔹 Check if the user has created a Stokvel
-      QuerySnapshot createdStokvels = await _firestore
-          .collection('stokvels')
-          .where('createdBy', isEqualTo: userId)
-          .get();
+/// **Checks if the user has created OR joined a Stokvel**
+// Future<bool> _checkUserStokvelMembership(String userId) async {
+//   try {
+//     // 🔹 Check if the user has created a Stokvel
+//     QuerySnapshot createdStokvels = await _firestore
+//         .collection('stokvels')
+//         .where('createdBy', isEqualTo: userId)
+//         .get();
 
-      // 🔹 Check if the user has joined a Stokvel
-      QuerySnapshot joinedStokvels = await _firestore
-          .collectionGroup('members') // Searches all "members" subcollections
-          .where('userId',
-              isEqualTo: userId) // ✅ Use 'userId' instead of documentId
-          .get();
+//     // 🔹 Check if the user has joined a Stokvel
+//     QuerySnapshot joinedStokvels = await _firestore
+//         .collectionGroup('members') // Searches all "members" subcollections
+//         .where('userId', isEqualTo: userId) // ✅ Indexed field
+//         .get();
 
-      // ✅ If user has created OR joined a stokvel, return true
-      return createdStokvels.docs.isNotEmpty || joinedStokvels.docs.isNotEmpty;
-    } catch (e) {
-      print("Error checking stokvel membership: $e");
-      return false; // Assume no stokvel found in case of an error
-    }
-  }
+//     // ✅ If user has created OR joined a stokvel, return true
+//     bool hasStokvel = createdStokvels.docs.isNotEmpty || joinedStokvels.docs.isNotEmpty;
+
+//     print("User has stokvel: $hasStokvel"); // Debugging log
+//     return hasStokvel;
+//   } catch (e) {
+//     print("🔥 Error checking stokvel membership: $e");
+//     return false; // Assume no stokvel found in case of an error
+//   }
+//}
+
 
   @override
   Widget build(BuildContext context) {
