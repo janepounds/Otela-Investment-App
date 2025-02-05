@@ -1,5 +1,7 @@
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../colors.dart';
@@ -15,14 +17,17 @@ class InviteMembersScreen extends StatefulWidget {
 
 class _InviteMembersScreenState extends State<InviteMembersScreen> {
   List<Contact> selectedContacts = [];
-  String invitationMessage = "Hey! Join my Stokvel on this app. It's a great way to save together!";
+  TextEditingController _messageController = TextEditingController();
+  String dynamicLink = ""; // Placeholder for generated link
 
   @override
   void initState() {
     super.initState();
     _requestPermissions();
+    generateDynamicLink();
   }
 
+  /// Request Contacts Permission
   Future<void> _requestPermissions() async {
     var status = await Permission.contacts.request();
     if (status.isGranted) {
@@ -32,6 +37,56 @@ class _InviteMembersScreenState extends State<InviteMembersScreen> {
     }
   }
 
+  /// Generate Dynamic Link
+  Future<void> generateDynamicLink() async {
+    String link = await createDynamicLink(widget.stokvelId);
+    setState(() {
+      dynamicLink = link;
+      _messageController.text = """
+Hello there,
+
+I'm excited to invite you to join my Stokvel through this app! It’s a fantastic way for us to save, support each other, and reach our financial goals together. 
+
+Download the app and join me today!  
+👉 $dynamicLink  
+
+Best regards,  
+[Admin Name]
+""";
+    });
+  }
+
+  /// Create Firebase Dynamic Link
+Future<String> createDynamicLink(String stokvelId) async {
+  final DynamicLinkParameters parameters = DynamicLinkParameters(
+    uriPrefix: "https://otelainvestmentclubapp.page.link",
+    link: Uri.parse("https://otelainvestmentclubapp.com/invite?stokvelId=$stokvelId"),
+    androidParameters: AndroidParameters(
+      packageName: "com.example.otela_investment_club_app",
+      minimumVersion: 1,
+      fallbackUrl: Uri.parse("https://www.dropbox.com/scl/fi/wmkpc2lt2fi5tc6bdazka/app-debug.apk?rlkey=vf5r2umfe5izyw42u9tkjgoq0&st=y0rjt4w4&dl=1"), // ✅ Use fallbackUrl here
+    ),
+    iosParameters: IOSParameters(
+      bundleId: "com.yourapp.bundle",
+      minimumVersion: "1.0.0",
+    ),
+    navigationInfoParameters: NavigationInfoParameters(
+      forcedRedirectEnabled: true, // Forces redirection if the app is not installed
+    ),
+    socialMetaTagParameters: SocialMetaTagParameters(
+      title: "Join My Stokvel!",
+      description: "Download the app to join our stokvel community.",
+      imageUrl: Uri.parse("https://www.dropbox.com/scl/fi/gxowqk6bbl2lpavtnc2xo/logo_no_text.png?rlkey=hdndljrt4h57sl18ppsaji64j&st=omff8zi3&raw=1"),
+    ),
+  );
+
+  final ShortDynamicLink shortLink = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
+  return shortLink.shortUrl.toString();
+}
+
+
+
+  /// Pick Contact
   void pickContact() async {
     try {
       Contact? contact = await FlutterContacts.openExternalPick();
@@ -43,43 +98,53 @@ class _InviteMembersScreenState extends State<InviteMembersScreen> {
     }
   }
 
+  /// Remove Contact
   void removeContact(Contact contact) {
     setState(() {
       selectedContacts.remove(contact);
     });
   }
 
-Future<void> sendInvite(Contact contact) async {
-  if (contact.phones.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("This contact has no phone number.")),
-    );
-    return;
+  /// Handle Deep Links
+  void handleDynamicLinks() async {
+    FirebaseDynamicLinks.instance.onLink.listen((PendingDynamicLinkData? data) {
+      final Uri? deepLink = data?.link;
+      if (deepLink != null) {
+        String? stokvelId = deepLink.queryParameters['stokvelId'];
+        if (stokvelId != null) {
+          // Navigate user to join the stokvel
+        }
+      }
+    });
   }
 
-  String phone = contact.phones.first.number.replaceAll(RegExp(r'\D'), '');
-  if (!phone.startsWith("+")) {
-    phone = "+$phone"; // Ensure correct country code
+  /// Send Invite via WhatsApp
+  Future<void> sendInvite(Contact contact) async {
+    if (contact.phones.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("This contact has no phone number.")),
+      );
+      return;
+    }
+
+    String phone = contact.phones.first.number.replaceAll(RegExp(r'\D'), '');
+    if (!phone.startsWith("+")) {
+      phone = "+$phone"; // Ensure correct country code
+    }
+
+    String message = Uri.encodeComponent(_messageController.text);
+
+    final Uri whatsappUrl = Uri.parse("https://wa.me/$phone?text=$message");
+
+    if (await canLaunchUrl(whatsappUrl)) {
+      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Couldn't open WhatsApp")),
+      );
+    }
   }
 
-  String message = Uri.encodeComponent("Hi, join my Stokvel! 📲");
-
-  // Android-specific WhatsApp intent
-  final Uri whatsappAndroid = Uri.parse("whatsapp://send?phone=$phone&text=$message");
-
-  // iOS-specific WhatsApp link
-  final Uri whatsappIOS = Uri.parse("https://wa.me/$phone?text=$message");
-
-  if (await canLaunchUrl(whatsappAndroid)) {
-    await launchUrl(whatsappAndroid, mode: LaunchMode.externalApplication);
-  } else if (await canLaunchUrl(whatsappIOS)) {
-    await launchUrl(whatsappIOS, mode: LaunchMode.externalApplication);
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Couldn't open WhatsApp")),
-    );
-  }
-}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,13 +159,17 @@ Future<void> sendInvite(Contact contact) async {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            Text("Invite Members", style: TextStyle(color: Colors.white, fontSize: 20)),
+            Text("Invite Members",
+                style: TextStyle(color: Colors.white, fontSize: 20)),
             SizedBox(height: 4),
-            Text("Select a contact to invite", style: TextStyle(color: Colors.white, fontSize: 14)),
+            Text("Select a contact to invite",
+                style: TextStyle(color: Colors.white, fontSize: 14)),
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.menu, color: Colors.white), onPressed: () {}),
+          IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () {}),
         ],
       ),
       body: Container(
@@ -110,19 +179,27 @@ Future<void> sendInvite(Contact contact) async {
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Contact Selection Card
+            // Select Contacts Button
             GestureDetector(
               onTap: pickContact,
-              child: Card(
-                shape: RoundedRectangleBorder(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.darBlue, width: 1.5),
                   borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Colors.blue, width: 1.5),
                 ),
-                child: const ListTile(
-                  leading: Icon(Icons.person_add, color: Colors.blue),
-                  title: Text("Select a Contact"),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Click to Select Contacts",
+                      style: TextStyle(color: AppColors.darBlue, fontSize: 16),
+                    ),
+                    SizedBox(width: 8),
+                    SvgPicture.asset("assets/icons/address_book.svg"),
+                  ],
                 ),
               ),
             ),
@@ -136,12 +213,15 @@ Future<void> sendInvite(Contact contact) async {
                   itemBuilder: (context, index) {
                     var contact = selectedContacts[index];
                     return Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       elevation: 3,
                       child: ListTile(
                         title: Text(contact.displayName ?? "Unknown"),
                         subtitle: Text(
-                          contact.phones.isNotEmpty ? contact.phones.first.number : "No phone number",
+                          contact.phones.isNotEmpty
+                              ? contact.phones.first.number
+                              : "No phone number",
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
@@ -152,22 +232,31 @@ Future<void> sendInvite(Contact contact) async {
                   },
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
 
               // Editable Invitation Message
               TextField(
-                maxLines: 3,
-                onChanged: (value) => setState(() => invitationMessage = value),
+                controller: _messageController,
+                maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: "Type your custom message...",
+                  labelText: "Enter Invitation Message", // Acts as a legend
+                  labelStyle: TextStyle(
+                    color: AppColors.gray, // Matches the design
+                    fontWeight: FontWeight.bold,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.grey),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                  ),
+                  contentPadding: EdgeInsets.all(16),
                 ),
               ),
-              const SizedBox(height: 16),
+
+              const SizedBox(height: 10),
 
               // Invite Button
               SizedBox(
@@ -182,7 +271,8 @@ Future<void> sendInvite(Contact contact) async {
                   label: const Text("Send Invite"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFDAB669),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),

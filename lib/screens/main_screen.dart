@@ -63,7 +63,7 @@ class _MainScreenState extends State<MainScreen> {
     },
   ];
 
-   String? stokvelId;
+  String? stokvelId;
 
   @override
   void initState() {
@@ -71,7 +71,7 @@ class _MainScreenState extends State<MainScreen> {
     _fetchStokvelId();
   }
 
-   Future<void> _fetchStokvelId() async {
+  Future<void> _fetchStokvelId() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       QuerySnapshot stokvelsQuery = await FirebaseFirestore.instance
@@ -160,22 +160,59 @@ class _MainScreenState extends State<MainScreen> {
                           ),
                           const SizedBox(height: 8),
                           // Large Number
-                          Text(
-                            "6", // Replace with actual data
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
+                          StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('stokvels')
+                                .doc(stokvelId)
+                                .collection('members')
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+
+                              // Get all members
+                              var members = snapshot.data!.docs;
+
+                              // Count total members
+                              int totalMembers = members.length;
+
+                              // Count members who were invited
+                              int invitedCount = members
+                                  .where((doc) => doc['status'] == 'invited')
+                                  .length;
+
+                              // Count members who signed up
+                              int signedUpCount = members
+                                  .where((doc) => doc['status'] == 'joined')
+                                  .length;
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "$totalMembers", // Display total members dynamically
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Smaller Stats
+                                  Text("Invited = $invitedCount",
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.darBlue)),
+                                  Text("Signed Up = $signedUpCount",
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          color: AppColors.darBlue)),
+                                ],
+                              );
+                            },
                           ),
-                          const SizedBox(height: 8),
-                          // Smaller Stats
-                          Text("Invited = 100",
-                              style: TextStyle(
-                                  fontSize: 14, color: AppColors.darBlue)),
-                          Text("Signed Up = 20",
-                              style: TextStyle(
-                                  fontSize: 14, color: AppColors.darBlue)),
                         ],
                       ),
                     ),
@@ -258,7 +295,8 @@ class _MainScreenState extends State<MainScreen> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => MembersListScreen(stokvelId: stokvelId!)),
+                        builder: (context) =>
+                            MembersListScreen(stokvelId: stokvelId!)),
                   );
                 },
                 style: ElevatedButton.styleFrom(
