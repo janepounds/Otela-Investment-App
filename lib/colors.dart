@@ -7,4 +7,7 @@ class AppColors {
   static const Color red = Color(0xFFA13737);
   static const Color brighterBeige = Color(0xFFDAB669);
   static const Color gray = Color(0xFFEFEFEF);
+  static const Color beige = Color(0xFFDCB765);
+  static const Color footer = Color(0xFFF0EFEF);
+  static const Color black = Color(0xFF000000);
 }

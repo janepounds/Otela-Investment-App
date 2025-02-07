@@ -144,11 +144,37 @@ class _MembersListScreenState extends State<MembersListScreen> {
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
+
+                            // Display First Name
                             title: Text(
                               firstName,
                               style: const TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w600),
                             ),
+
+                            // Display Additional Info Below Name
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 4), // Small spacing
+
+                                // Robo Advisor Status
+                                Text(
+                                  "Robo Advisor: ${(member['roboAdvisor'] ?? false) ? 'Yes' : 'No'}",
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black54),
+                                ),
+
+                                // Amount Paid
+                                Text(
+                                  "Amount Paid: \$${(member['amountPaid'] ?? 0).toStringAsFixed(2)}",
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.black54),
+                                ),
+                              ],
+                            ),
+
+                            // Status Badge (Trailing)
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
@@ -212,7 +238,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
             );
           },
           backgroundColor: Colors.transparent,
-          elevation: 0,
+          elevation: 1,
           label: const Row(
             children: [
               Icon(Icons.add, color: Colors.white), // Plus icon at the start

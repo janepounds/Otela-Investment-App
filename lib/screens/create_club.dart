@@ -95,6 +95,8 @@ if (user != null) {
     'firstName': memberFirstName,
     'lastName': memberLastName,
     'phone': memberPhone,
+    'roboAdvisor': false, // Default value
+    'amountPaid': 0,
      'status': 'Pending',
     'joinedAt': Timestamp.now(),
   });

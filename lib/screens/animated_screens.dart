@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:otela_investment_club_app/colors.dart';
 import 'login_screen.dart';
 
 class AnimatedScreens extends StatefulWidget {
@@ -87,10 +88,10 @@ class _AnimatedScreensState extends State<AnimatedScreens> {
                     (index) => AnimatedContainer(
                       duration: Duration(milliseconds: 300),
                       margin: EdgeInsets.symmetric(horizontal: 5),
-                      width: _currentIndex == index ? 12 : 8,
-                      height: 8,
+                      width: _currentIndex == index ? 10 : 10,
+                      height: 10,
                       decoration: BoxDecoration(
-                        color: _currentIndex == index ? Color(0xFF113293) : Colors.amber.shade600,
+                        color: _currentIndex == index ? AppColors.darBlue : AppColors.beige,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -105,15 +106,15 @@ class _AnimatedScreensState extends State<AnimatedScreens> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber.shade600,
+                    backgroundColor: AppColors.beige,
                     padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: EdgeInsets.symmetric(horizontal: 45.0),
                     child: Text(
                       'GET STARTED',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -146,7 +147,8 @@ class _AnimatedScreensState extends State<AnimatedScreens> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 22,
-                color: Color(0xFF113293),
+                color: AppColors.darBlue,
+                fontFamily: 'poppins',
               ),
             ),
           ),

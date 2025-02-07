@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/members_details.dart';
+import 'package:otela_investment_club_app/screens/portfolio.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -62,6 +63,24 @@ class _MainScreenState extends State<MainScreen> {
       "subtitle": ""
     },
   ];
+
+  int _selectedIndex = 0; // Track the selected index
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    if (index == 4) {
+      // If "Invest" tab is tapped
+
+      // Navigate or perform any action
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => PortfolioScreen()),
+      );
+    }
+  }
 
   String? stokvelId;
 
@@ -370,15 +389,49 @@ class _MainScreenState extends State<MainScreen> {
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white70,
         type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        currentIndex: _selectedIndex, // Track the selected index
+        onTap: _onItemTapped,
+        items: [
           BottomNavigationBarItem(
-              icon: Icon(Icons.attach_money), label: "Invest"),
-          BottomNavigationBarItem(icon: Icon(Icons.flag), label: "Goals"),
+            icon: SizedBox(
+              width: 24, // Adjust size as needed
+              height: 24,
+              child: SvgPicture.asset("assets/icons/home.svg"),
+            ),
+            label: "Home",
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.pie_chart), label: "Portfolio"),
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: SvgPicture.asset("assets/icons/investment.svg"),
+            ),
+            label: "Invest",
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.remove_red_eye), label: "Watchlist"),
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: SvgPicture.asset("assets/icons/goals.svg"),
+            ),
+            label: "Goals",
+          ),
+          BottomNavigationBarItem(
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: SvgPicture.asset("assets/icons/portfolio.svg"),
+            ),
+            label: "Portfolio",
+          ),
+          BottomNavigationBarItem(
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: SvgPicture.asset("assets/icons/watchlist.svg"),
+            ),
+            label: "Watchlist",
+          ),
         ],
       ),
 

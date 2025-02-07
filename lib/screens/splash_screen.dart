@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/animated_screens.dart';
 import 'package:otela_investment_club_app/screens/main_screen.dart';
@@ -87,7 +88,7 @@ class _SplashScreenState extends State<SplashScreen> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.primaryAmber, // Background color
+      backgroundColor: AppColors.beige, // Background color
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -98,25 +99,28 @@ class _SplashScreenState extends State<SplashScreen> {
               alignment: Alignment.topCenter,
               children: [
                 // "otela" text
-                Text(
-                  'otela',
-                  style: TextStyle(
-                    fontSize: 50,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'poppins',
-                    color: Colors.white,
-                  ),
-                ),
+                SvgPicture.asset("assets/icons/logo.svg",
+                 width: 300,
+                  height: 300),
+                // Text(
+                //   'otela',
+                //   style: TextStyle(
+                //     fontSize: 50,
+                //     fontWeight: FontWeight.bold,
+                //     fontFamily: 'poppins',
+                //     color: Colors.white,
+                //   ),
+                // ),
                 // Image positioned at the top-right of "otela"
-                Positioned(
-                  top: -30, // Adjust this value as needed
-                  right: -40, // Adjust this value as needed
-                  child: Image.asset(
-                    'assets/images/logo_no_text.png', // Replace with your image path
-                    width: 50, // Adjust the size of the image
-                    height: 50,
-                  ),
-                ),
+                // Positioned(
+                //   top: -30, // Adjust this value as needed
+                //   right: -40, // Adjust this value as needed
+                //   child: Image.asset(
+                //     'assets/images/logo_no_text.png', // Replace with your image path
+                //     width: 50, // Adjust the size of the image
+                //     height: 50,
+                //   ),
+                // ),
               ],
             ),
             SizedBox(height: 20), // Add some spacing
@@ -124,7 +128,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Text(
               'If you can dream it,\nTogether we can realize it!',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.white),
+              style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'poppins'),
             ),
 
             const SizedBox(height: 8), // Add spacing before the line

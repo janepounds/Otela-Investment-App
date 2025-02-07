@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -12,12 +13,13 @@ class InviteMembersScreen extends StatefulWidget {
   const InviteMembersScreen({super.key, required this.stokvelId});
 
   @override
+  // ignore: library_private_types_in_public_api
   _InviteMembersScreenState createState() => _InviteMembersScreenState();
 }
 
 class _InviteMembersScreenState extends State<InviteMembersScreen> {
   List<Contact> selectedContacts = [];
-  TextEditingController _messageController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
   String dynamicLink = ""; // Placeholder for generated link
 
   @override
@@ -118,32 +120,51 @@ Future<String> createDynamicLink(String stokvelId) async {
     });
   }
 
-  /// Send Invite via WhatsApp
-  Future<void> sendInvite(Contact contact) async {
-    if (contact.phones.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("This contact has no phone number.")),
-      );
-      return;
-    }
-
-    String phone = contact.phones.first.number.replaceAll(RegExp(r'\D'), '');
-    if (!phone.startsWith("+")) {
-      phone = "+$phone"; // Ensure correct country code
-    }
-
-    String message = Uri.encodeComponent(_messageController.text);
-
-    final Uri whatsappUrl = Uri.parse("https://wa.me/$phone?text=$message");
-
-    if (await canLaunchUrl(whatsappUrl)) {
-      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Couldn't open WhatsApp")),
-      );
-    }
+  /// Send Invite via WhatsApp and Update Firestore
+Future<void> sendInvite(Contact contact) async {
+  if (contact.phones.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("This contact has no phone number.")),
+    );
+    return;
   }
+
+  // Extract and format phone number
+  String phone = contact.phones.first.number.replaceAll(RegExp(r'\D'), '');
+  if (!phone.startsWith("+")) {
+    phone = "+$phone"; // Ensure correct country code
+  }
+
+  // Create a Firestore reference to the `members` subcollection
+  final CollectionReference membersRef = FirebaseFirestore.instance
+      .collection('stokvels')
+      .doc(widget.stokvelId)
+      .collection('members');
+
+  // Add invited member to Firestore
+  await membersRef.doc(phone).set({
+    'phone': phone,
+    'firstName': contact.displayName, // Store contact's name
+    'status': 'invited',
+    'roboAdvisor': false, // Default value
+    'amountPaid': 0, // Default value
+    'invitedAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  // Generate WhatsApp message
+  String message = Uri.encodeComponent(_messageController.text);
+  final Uri whatsappUrl = Uri.parse("https://wa.me/$phone?text=$message");
+
+  // Send WhatsApp message
+  if (await canLaunchUrl(whatsappUrl)) {
+    await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Couldn't open WhatsApp")),
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
