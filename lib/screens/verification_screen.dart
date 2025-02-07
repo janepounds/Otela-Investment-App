@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/congratulation_screen.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -42,7 +43,7 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF9E0B1),
+      backgroundColor: AppColors.beige,
       body: Stack(
         children: [
           Column(
@@ -50,7 +51,7 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
               Expanded(
                 flex: 3,
                 child: Container(
-                  color: Color(0xFFF9E0B1),
+                  color: AppColors.beige,
                   child: Center(
                     child: Image.asset('assets/images/verification_code_no_bg.png', width: 300),
                   ),
@@ -71,8 +72,8 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Please enter verification code sent to you.',
-                          style: TextStyle(color: Color(0xFF113293), fontSize: 16),
+                          'Please enter verification code\n sent to you.',
+                          style: TextStyle(color: AppColors.darBlue, fontSize: 16),
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 20),
@@ -84,24 +85,25 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(color: AppColors.gray)
                             ),
                           ),
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
                         ),
-                        SizedBox(height: 20),
+                        SizedBox(height: 50),
                         ElevatedButton(
                           onPressed: verifyOTP,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFA78A52),
+                            backgroundColor: AppColors.beige,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                            padding: EdgeInsets.symmetric(horizontal: 80, vertical: 12),
                           ),
                           child: Text(
                             'Verify Code',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                           ),
                         ),
                       ],
