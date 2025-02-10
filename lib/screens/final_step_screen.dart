@@ -1,83 +1,107 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:otela_investment_club_app/colors.dart';
 
 class FinalConfirmationScreen extends StatelessWidget {
   const FinalConfirmationScreen({super.key});
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF9E0B1),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              // Top Section with Logo & Menu
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-                decoration: BoxDecoration(
-                  color: Color(0xFFF9E0B1),
-                ),
-                child: Row(
+        backgroundColor: AppColors.beige,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children:  [
+            Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Image.asset('assets/images/logo_no_text.png', height: 30),
+                    SvgPicture.asset('assets/images/logo.svg', height: 30),
                     Icon(Icons.menu, color: Colors.white, size: 30),
                   ],
+                )
+              ],
+            ),
+          ),
+          // actions: [
+          //   Padding(
+          //     padding: const EdgeInsets.only(right: 16.0),
+          //     child: Image.asset('assets/images/logo_no_text.png',
+          //         width: 50, height: 50),
+          //   ),
+          // ],
+        ),
+        body: Column(
+          children: [
+            const SizedBox(height: 20), // Spacing
+            Expanded(
+              // Ensures the form expands to take available space
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.only(topRight: Radius.circular(30)),
                 ),
-              ),
-              
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                  ),
-                  padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
+                child: SingleChildScrollView(
+                  // Enables scrolling if content is too much
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
+                      Center( 
+                      child: Text(
                         'Congratulations!',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                          color:  AppColors.darBlue,
                         ),
-                      ),
+                      )
+                     ),
                       SizedBox(height: 15),
-                      Text(
+                      Center( 
+                      child:Text(
                         'Click the button Done below if you confirm the information provided is accurate & complete.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                        style: TextStyle(fontSize: 16, color:  AppColors.darBlue),
+                      )
                       ),
                       SizedBox(height: 10),
-                      Text(
+                      Center( 
+                      child:Text(
                         'Otela requires this information to comply with the regulatory “Know Your Client” requirements.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                        style: TextStyle(fontSize: 16, color:  AppColors.darBlue),
+                      )
                       ),
                       SizedBox(height: 10),
-                      Text(
+                      Center( 
+                      child:Text(
                         'We may require additional information for approval on some aspects of this registration.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                        style: TextStyle(fontSize: 16, color:  AppColors.darBlue),
+                      )
                       ),
                       SizedBox(height: 10),
-                      Text(
+                      Center( 
+                      child:Text(
                         'You will be contacted within 3 working days.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                        style: TextStyle(fontSize: 16, color:  AppColors.darBlue),
+                      )
                       ),
                       SizedBox(height: 10),
-                      Text(
+                      Center( 
+                      child:Text(
                         'Your information has been successfully submitted.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                        style: TextStyle(fontSize: 16, color: AppColors.darBlue),
+                      )
                       ),
                       SizedBox(height: 30),
                       ElevatedButton(
@@ -87,7 +111,7 @@ class FinalConfirmationScreen extends StatelessWidget {
 
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFD8A85B),
+                          backgroundColor: AppColors.beige,
                           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
@@ -112,12 +136,13 @@ class FinalConfirmationScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+
+                  //new footer
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
-    );
+            ),
+          ],
+        ));
   }
+ 
 }

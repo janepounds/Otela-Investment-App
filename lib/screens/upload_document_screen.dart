@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:otela_investment_club_app/colors.dart';
+import 'package:otela_investment_club_app/screens/bank_details_screen.dart';
 
 class UploadDocumentScreen extends StatefulWidget {
   const UploadDocumentScreen({super.key});
@@ -13,7 +15,6 @@ class UploadDocumentScreen extends StatefulWidget {
 }
 
 class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
-
   final TextEditingController taxNumberController = TextEditingController();
   File? taxFile;
   File? domiciliumFile;
@@ -42,7 +43,8 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
 
     try {
       String fileName = file.path.split('/').last;
-      Reference storageRef = FirebaseStorage.instance.ref().child("documents/$fileName");
+      Reference storageRef =
+          FirebaseStorage.instance.ref().child("documents/$fileName");
       UploadTask uploadTask = storageRef.putFile(file);
       TaskSnapshot snapshot = await uploadTask;
       String downloadUrl = await snapshot.ref.getDownloadURL();
@@ -69,41 +71,149 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
     });
   }
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     backgroundColor: Colors.white,
+  //     body: Padding(
+  //       padding: const EdgeInsets.all(20),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.center,
+  //         children: [
+  //           const SizedBox(height: 30),
+  //           const Text("TAX PIN Certificate",
+  //               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue)),
+  //           const SizedBox(height: 15),
+  //           buildInputField("Tax number (PIN/TIN/SSN)", taxNumberController),
+  //           const SizedBox(height: 10),
+  //           buildUploadSection("Document:", taxFile, taxFileUrl, () => pickFile(true), () => uploadFile(taxFile!, true)),
+  //           const SizedBox(height: 30),
+  //           const Text("Domicilium",
+  //               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue)),
+  //           const SizedBox(height: 10),
+  //           buildUploadSection("Document:", domiciliumFile, domiciliumFileUrl, () => pickFile(false), () => uploadFile(domiciliumFile!, false)),
+  //           const SizedBox(height: 30),
+  //           isUploading ? const CircularProgressIndicator() : buildSaveButton(),
+  //           const SizedBox(height: 15),
+  //           TextButton(
+  //             onPressed: () {},
+  //             child: const Text(
+  //               "Back to Stokvel Details",
+  //               style: TextStyle(fontSize: 14, color: Colors.blue, fontWeight: FontWeight.bold),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        backgroundColor: AppColors.beige,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text("My Profile",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'poppins')),
+                SizedBox(height: 4),
+                Text("Finish Setting up your profile",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontFamily: 'poppins')),
+              ],
+            ),
+          ),
+          // actions: [
+          //   Padding(
+          //     padding: const EdgeInsets.only(right: 16.0),
+          //     child: Image.asset('assets/images/logo_no_text.png',
+          //         width: 50, height: 50),
+          //   ),
+          // ],
+        ),
+        body: Column(
           children: [
-            const SizedBox(height: 30),
-            const Text("TAX PIN Certificate",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue)),
-            const SizedBox(height: 15),
-            buildInputField("Tax number (PIN/TIN/SSN)", taxNumberController),
-            const SizedBox(height: 10),
-            buildUploadSection("Document:", taxFile, taxFileUrl, () => pickFile(true), () => uploadFile(taxFile!, true)),
-            const SizedBox(height: 30),
-            const Text("Domicilium",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.blue)),
-            const SizedBox(height: 10),
-            buildUploadSection("Document:", domiciliumFile, domiciliumFileUrl, () => pickFile(false), () => uploadFile(domiciliumFile!, false)),
-            const SizedBox(height: 30),
-            isUploading ? const CircularProgressIndicator() : buildSaveButton(),
-            const SizedBox(height: 15),
-            TextButton(
-              onPressed: () {},
-              child: const Text(
-                "Back to Stokvel Details",
-                style: TextStyle(fontSize: 14, color: Colors.blue, fontWeight: FontWeight.bold),
+            const SizedBox(height: 20), // Spacing
+            Expanded(
+              // Ensures the form expands to take available space
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.only(topRight: Radius.circular(30)),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: SingleChildScrollView(
+                  // Enables scrolling if content is too much
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 30),
+                      const ProgressStepper(),
+                      const SizedBox(height: 20),
+                      const Center(
+                          child: Text("TAX PIN Certificate",
+                              style: TextStyle(
+                                  fontSize: 22, color: AppColors.darBlue))),
+                      const SizedBox(height: 15),
+                      buildInputField(
+                          "Tax number (PIN/TIN/SSN)", taxNumberController),
+                      const SizedBox(height: 15),
+                      buildUploadSection(
+                          "Document:",
+                          taxFile,
+                          taxFileUrl,
+                          () => pickFile(true),
+                          () => uploadFile(taxFile!, true)),
+                      const SizedBox(height: 30),
+                      const Center(
+                          child: Text("Domicilium",
+                              style: TextStyle(
+                                  fontSize: 22, color: AppColors.darBlue))),
+                      const SizedBox(height: 10),
+                      _buildDomiciliumList(),
+                      const SizedBox(height: 20),
+                      buildUploadSection(
+                          "Document:",
+                          domiciliumFile,
+                          domiciliumFileUrl,
+                          () => pickFile(false),
+                          () => uploadFile(domiciliumFile!, false)),
+                      const SizedBox(height: 30),
+                      isUploading
+                          ? const CircularProgressIndicator()
+                          : buildSaveButton(),
+                      const SizedBox(height: 15),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          "Back to Stokvel Details",
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.darBlue,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  //new footer
+                ),
               ),
             ),
           ],
-        ),
-      ),
-    );
+        ));
   }
 
   Widget buildInputField(String hint, TextEditingController controller) {
@@ -111,47 +221,141 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
       ),
     );
   }
 
-  Widget buildUploadSection(String title, File? file, String? fileUrl, VoidCallback onPick, VoidCallback onUpload) {
-    return Column(
+  Widget buildUploadSection(String title, File? file, String? fileUrl,
+      VoidCallback onPick, VoidCallback onUpload) {
+    return Center(
+        child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+        Text(title,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppColors.darBlue)),
         const SizedBox(height: 5),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             file != null
-                ? Expanded(child: Text(file.path.split('/').last, style: const TextStyle(color: Colors.black54)))
+                ? Expanded(
+                    child: Text(file.path.split('/').last,
+                        style: const TextStyle(color: Colors.black54)))
                 : const SizedBox(),
             ElevatedButton(
               onPressed: onPick,
-              child: const Text("Pick File", style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.darBlue,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30))),
+              child: const Text("Upload File",
+                  style: TextStyle(color: Colors.white)),
             ),
             if (file != null)
               ElevatedButton(
                 onPressed: onUpload,
-                child: const Text("Upload", style: TextStyle(color: Colors.white)),
+                child:
+                    const Text("Upload", style: TextStyle(color: Colors.white)),
               ),
           ],
         ),
         if (fileUrl != null)
           Padding(
             padding: const EdgeInsets.only(top: 5),
-            child: Text("Uploaded: $fileUrl", style: const TextStyle(color: Colors.green, fontSize: 12)),
+            child: Text("Uploaded: $fileUrl",
+                style: const TextStyle(color: Colors.green, fontSize: 12)),
           ),
       ],
-    );
+    ));
   }
 
   Widget buildSaveButton() {
     return ElevatedButton(
-      onPressed: () {},
-      child: const Text("Save & Continue"),
+      onPressed: () {
+        //navigate to banking details
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => BankDetailscreen()),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.beige,
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      ),
+      child: const Text(
+        "Save & Continue",
+        style: TextStyle(color: Colors.white, fontSize: 16),
+      ),
+    );
+  }
+
+  Widget _buildDomiciliumList() {
+    List<String> docs = ["Agreement", "Policies", "Members contacts"];
+    return Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                  leading: Icon(Icons.description, color: Colors.white),
+                  title: Text(docs[index],
+                      style:
+                          TextStyle(fontSize: 10, color: AppColors.darBlue)));
+              // return Text(members[index], style: TextStyle(fontSize: 16));
+            },
+          ),
+          SizedBox(height: 10)
+        ],
+      ),
+    );
+  }
+}
+
+class ProgressStepper extends StatelessWidget {
+  const ProgressStepper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          children: [
+            buildStep("Stokvel", AppColors.beige, true),
+            buildStep("Tax & Domicilium", AppColors.beige, true),
+            buildStep("Banking Details", AppColors.darBlue, true),
+          ],
+        ));
+  }
+
+  Widget buildStep(String title, Color selectedColor, bool isChecked) {
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(isChecked ? Icons.check_circle : Icons.radio_button_unchecked,
+              color: selectedColor, size: 20),
+          SizedBox(width: 4),
+          Text(title, style: TextStyle(fontSize: 12, color: AppColors.darBlue)),
+          SizedBox(width: 10),
+        ],
+      ),
     );
   }
 }

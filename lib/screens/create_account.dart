@@ -392,8 +392,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                                 ],
                               ),
 
-                              
-
                               //footer section
                             ],
                           ),
@@ -402,61 +400,55 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     ],
                   ),
 
-
                   //new footer
-                  
                 ),
               ),
-
-              
             ),
 
             /// 🔥 Footer Section Sticks to Bottom 🔥 ///
-                              Container(
-                                width: double.infinity,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                decoration: const BoxDecoration(
-                                  color: AppColors.footer,
-                                  borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(20),
-                                      topRight: Radius.circular(20)),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    const Text(
-                                      '©Otela',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.darBlue,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    const Text(
-                                      'Privacy',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.darBlue,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    const Text(
-                                      'Legal',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.darBlue,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    const Text(
-                                      'Contact',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.darBlue,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                              )
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: const BoxDecoration(
+                color: AppColors.footer,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const Text(
+                    '©Otela',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.darBlue,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    'Privacy',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.darBlue,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    'Legal',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.darBlue,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const Text(
+                    'Contact',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.darBlue,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            )
           ],
         ));
   }
