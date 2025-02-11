@@ -2,8 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
 
-class PaymentMethodScreen extends StatelessWidget {
-  const PaymentMethodScreen({super.key});
+class PortfolioScreen extends StatelessWidget {
+  const PortfolioScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class PaymentMethodScreen extends StatelessWidget {
         title: const Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Text(
-            "Payment Method",
+            "Portfolio",
             style: TextStyle(
               color: Colors.white,
               fontSize: 24,
@@ -47,15 +47,7 @@ class PaymentMethodScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-               const Center(child:  Text(
-                      "Select a payment method",
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darBlue),
-                    )
-               ),
-const SizedBox(height: 40),
+
               // Summary Card (Removed Expanded)
               Container(
                 padding: const EdgeInsets.all(16),
@@ -65,7 +57,13 @@ const SizedBox(height: 40),
                 ),
                 child: Column(
                   children: [
-                   
+                    const Text(
+                      "Investment Summary",
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.darBlue),
+                    ),
                     const SizedBox(height: 20),
                     _buildPortfolioRow("Total Investments", "R 50,000"),
                     _buildPortfolioRow("Growth", "+12.5%"),

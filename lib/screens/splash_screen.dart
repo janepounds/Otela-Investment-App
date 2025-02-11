@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/animated_screens.dart';
 import 'package:otela_investment_club_app/screens/bank_details_screen.dart';
+import 'package:otela_investment_club_app/screens/final_step_screen.dart';
 import 'package:otela_investment_club_app/screens/main_screen.dart';
 import 'package:otela_investment_club_app/screens/stokvel_details.dart';
 import 'package:otela_investment_club_app/screens/upload_document_screen.dart';
@@ -52,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => BankDetailscreen()),
+          MaterialPageRoute(builder: (context) => MainScreen()),
         );
     }
   }

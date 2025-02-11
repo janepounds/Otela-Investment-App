@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:otela_investment_club_app/colors.dart';
+import 'package:otela_investment_club_app/screens/investing/fund_details_screen.dart';
 import 'package:otela_investment_club_app/screens/members_details.dart';
 import 'package:otela_investment_club_app/screens/portfolio.dart';
 
@@ -70,8 +71,17 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
+     if (index == 2) {
+      // If "Invest" tab is tapped
 
-    if (index == 4) {
+      // Navigate or perform any action
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => FundDetailsScreen()),
+      );
+     }
+
+    if (index == 3) {
       // If "Invest" tab is tapped
 
       // Navigate or perform any action
