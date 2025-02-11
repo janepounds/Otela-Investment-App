@@ -5,7 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/investing/fund_details_screen.dart';
 import 'package:otela_investment_club_app/screens/members_details.dart';
-import 'package:otela_investment_club_app/screens/portfolio.dart';
+import 'package:otela_investment_club_app/screens/portifolio_management/portfolio.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -555,3 +555,51 @@ Widget buildIndicator(bool isActive) {
     ),
   );
 }
+
+
+Future<void> showSignOutDialog(BuildContext context, VoidCallback onSignOut) {
+  return showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Column(
+          children: [
+            Icon(Icons.exit_to_app, size: 50, color: Colors.red), // Sign-out icon
+            const SizedBox(height: 10),
+            const Text(
+              "Sign Out",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          "Are you sure you want to sign out?",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16, color: Colors.black54),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // Close dialog
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              onSignOut(); // Perform sign-out action
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text("Sign Out", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    },
+  );
+}
+

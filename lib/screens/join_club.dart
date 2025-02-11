@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/verification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -159,7 +160,7 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
                     // Header Section
                     Container(
                       width: double.infinity,
-                      color: const Color(0xFFA78A52),
+                      color:  AppColors.beige,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 24),
                       child: Row(

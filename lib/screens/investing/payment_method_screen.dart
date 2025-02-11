@@ -1,9 +1,19 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
+import 'package:otela_investment_club_app/screens/investing/bank_transfer_screen.dart';
 
-class PaymentMethodScreen extends StatelessWidget {
+class PaymentMethodScreen extends StatefulWidget {
   const PaymentMethodScreen({super.key});
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _PaymentMethodScreenState createState() => _PaymentMethodScreenState();
+}
+
+class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
+  String _selectedMethod = "bank_transfer";
+  String _selectedDepositType = "once_off";
 
   @override
   Widget build(BuildContext context) {
@@ -47,78 +57,201 @@ class PaymentMethodScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 20),
-               const Center(child:  Text(
-                      "Select a payment method",
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darBlue),
-                    )
-               ),
-const SizedBox(height: 40),
+              const Center(
+                  child: Text(
+                "Select a payment method",
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darBlue),
+              )),
+              const SizedBox(height: 40),
               // Summary Card (Removed Expanded)
+
+              // 🔹 Payment Selection Card
               Container(
-                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                   
-                    const SizedBox(height: 20),
-                    _buildPortfolioRow("Total Investments", "R 50,000"),
-                    _buildPortfolioRow("Growth", "+12.5%"),
-                    _buildPortfolioRow("Risk Level", "Medium"),
+                    // 🔹 Bank Transfer Option
+                    RadioListTile(
+                      value: "bank_transfer",
+                      groupValue: _selectedMethod,
+                      activeColor: AppColors.darBlue, // Set custom color
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMethod = value.toString();
+                        });
+                      },
+                      title: const Text(
+                        "Bank Transfer",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppColors.darBlue),
+                      ),
+                      subtitle: const Text(
+                        "+0 Fees.\nTransfer can take up to 2 days processing.",
+                        style:
+                            TextStyle(fontSize: 12, color: AppColors.darBlue),
+                      ),
+                    ),
+
+                    // 🔹 PayPal Option
+                    RadioListTile(
+                      value: "paypal",
+                      groupValue: _selectedMethod,
+                      activeColor: AppColors.darBlue, // Set custom color
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedMethod = value.toString();
+                        });
+                      },
+                      title: Row(
+                        children: [
+                          Image.asset('assets/images/paypal.png',
+                              width: 20), // Add PayPal logo
+                          const SizedBox(width: 8),
+                          const Text(
+                            "PayPal",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: AppColors.darBlue),
+                          ),
+                        ],
+                      ),
+                      subtitle: const Text(
+                        "+0 Fees.\nTransfer can take up to 1 day processing.\nOnly Once-off Deposits allowed.",
+                        style:
+                            TextStyle(fontSize: 12, color: AppColors.darBlue),
+                      ),
+                    ),
+
+                    // 🔹 Deposit Type Selection
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Recurring Deposit
+                        Row(
+                          children: [
+                            Radio(
+                              value: "recurring",
+                              groupValue: _selectedDepositType,
+                              activeColor:
+                                  AppColors.darBlue, // Set custom color
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedDepositType = value.toString();
+                                });
+                              },
+                            ),
+                            const Text(
+                              "Recurring Deposit",
+                              style: TextStyle(color: AppColors.darBlue),
+                            ),
+                          ],
+                        ),
+
+                        // Once-off Deposit
+                        Row(
+                          children: [
+                            Radio(
+                              value: "once_off",
+                              groupValue: _selectedDepositType,
+                              activeColor:
+                                  AppColors.darBlue, // Set custom color
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedDepositType = value.toString();
+                                });
+                              },
+                            ),
+                            const Text(
+                              "Once-off Deposit",
+                              style: TextStyle(color: AppColors.darBlue),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 20),
-              Center(
-                  child: ElevatedButton(
-                onPressed: () {
-                  // Handle save action
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.beige, // Gold color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                ),
-                child: Text(
-                  "More Stats",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-              )),
-              const SizedBox(height: 20),
-              // Portfolio Make-up
-              const Center( child:  Text(
-                "Portfolio Make-up",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darBlue),
-              )
-              ),
-               Container(
-              width: 20, // Adjust line width as needed
-              height: 1, // Adjust thickness
-              color: AppColors.darBlue, // Use your background color
-            ),
-              const SizedBox(height: 20),
 
-              // Pie Chart
-              SizedBox(
-                height: 200,
-                child: PieChart(
-                  PieChartData(
-                    sections: [
-                      _buildPieChartSection(40, Colors.blue, "Stocks"),
-                      _buildPieChartSection(30, Colors.green, "Bonds"),
-                      _buildPieChartSection(20, Colors.orange, "Crypto"),
-                      _buildPieChartSection(10, Colors.red, "Cash"),
-                    ],
-                  ),
-                ),
+              // 🔹 Payment Summary Fields
+              _buildSummaryRow("Fund Name:", "",
+                  style: TextStyle(
+                      color: AppColors.darBlue,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+              _buildSummaryRow("How much am I paying now?", "",
+                  style: TextStyle(
+                      color: AppColors.beige,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+              _buildSummaryRow("Amount Selected:", "",
+                  style: TextStyle(
+                      color: AppColors.darBlue,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+              _buildSummaryRow("Traction Fees:", "",
+                  style: TextStyle(
+                      color: AppColors.darBlue,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+              _buildSummaryRow("Pay Now:", "",
+                  style: TextStyle(color: AppColors.darBlue)),
+              _buildSummaryRow("How much will get invested?", "",
+                  style: TextStyle(
+                      color: AppColors.beige,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+              _buildSummaryRow("Otela Fees:", "",
+                  style: TextStyle(
+                      color: AppColors.darBlue,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+              _buildSummaryRow("Total Invested:", "",
+                  style: TextStyle(
+                      color: AppColors.darBlue,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+
+              const SizedBox(height: 10),
+
+              // 🔹 Transfer Fees Notice
+              const Text(
+                "Your bank or mobile operator might apply transfer fees.",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.darBlue, fontSize: 12),
+              ),
+
+              // 🔹 Action Buttons
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildButton("Cancel", Colors.amber, () {
+                    Navigator.pop(context);
+                  }),
+                  _buildButton("Pay Now", Colors.blue, () {
+                    // Handle Payment
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => BankTransferScreen()),
+                    );
+                  }),
+                ],
               ),
             ],
           ),
@@ -127,33 +260,40 @@ const SizedBox(height: 40),
     );
   }
 
-  Widget _buildPortfolioRow(String title, String value) {
+  // 🔹 Summary Text Row
+  Widget _buildSummaryRow(String title, String value,
+      {required TextStyle style}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title,
-              style: const TextStyle(fontSize: 16, color: AppColors.darBlue)),
+          Text(
+            title,
+            style: style,
+          ),
           Text(value,
-              style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.darBlue)),
+              style:
+                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  PieChartSectionData _buildPieChartSection(
-      double percentage, Color color, String title) {
-    return PieChartSectionData(
-      value: percentage,
-      color: color,
-      title: title,
-      radius: 50,
-      titleStyle: const TextStyle(
-          fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+  // 🔹 Custom Button
+  Widget _buildButton(String text, Color color, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+            fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+      ),
     );
   }
 }

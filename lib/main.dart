@@ -15,7 +15,7 @@ import 'package:otela_investment_club_app/screens/main_screen.dart';
 import 'package:otela_investment_club_app/screens/my_profile_bank_details_screen.dart';
 import 'package:otela_investment_club_app/screens/personal_details_screen.dart';
 import 'package:otela_investment_club_app/screens/personal_kyc_screen.dart';
-import 'package:otela_investment_club_app/screens/portfolio.dart';
+import 'package:otela_investment_club_app/screens/portifolio_management/portfolio.dart';
 import 'package:otela_investment_club_app/screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:otela_investment_club_app/screens/upload_document_screen.dart';

@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
+import 'package:otela_investment_club_app/screens/loading_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'main_screen.dart';
 import 'create_account.dart';
@@ -197,14 +198,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Color(0xFFA78A52))
-                      : const Text(
+                  child:  const Text(
                           'LOGIN',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFA78A52),
+                            color: AppColors.beige,
                           ),
                         ),
                 ),
@@ -254,6 +253,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
             ),
+
+
+             // Reusable Loader
+          LoadingOverlay(isLoading: _isLoading),
           ],
         ),
       ),
