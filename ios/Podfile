@@ -1,0 +1,21 @@
+# Uncomment the next line to define a global platform for your project
+platform :ios, '12.0'
+
+# Specify the location of the Flutter SDK
+flutter_root = '/home/janepounds/flutter/flutter'
+
+# Load the Flutter-specific configurations for iOS
+eval(File.read(File.join(flutter_root, 'packages', 'flutter_tools', 'bin', 'podhelper.rb')), binding)
+
+target 'Runner' do
+  # Use frameworks for iOS
+  use_frameworks!
+
+  # Pods for Runner
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end
+
+target 'RunnerTests' do
+  inherit! :search_paths
+  # Pods for testing
+end
