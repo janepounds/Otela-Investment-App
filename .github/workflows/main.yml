@@ -34,12 +34,10 @@ jobs:
 
       - name: Build the app
         run: |
-          xcodebuild clean build -workspace YourApp.xcworkspace -scheme YourScheme -sdk iphonesimulator
+          xcodebuild clean build -workspace ios/Runner.xcworkspace -scheme Runner -sdk iphonesimulator
 
       - name: Run tests on the iOS Simulator
         run: |
-          # Start the simulator (this is the emulator running on the macOS CI environment)
           xcrun simctl boot "iPhone 12"
           xcrun simctl launch booted com.yourcompany.YourApp
-          # Run tests on the simulator (e.g., using XCTest)
-          xcodebuild test -workspace YourApp.xcworkspace -scheme YourScheme -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' -quiet
+          xcodebuild test -workspace ios/Runner.xcworkspace -scheme Runner -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' -quiet
