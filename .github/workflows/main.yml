@@ -21,23 +21,20 @@ jobs:
         with:
           flutter-version: '3.27.3'
 
-      - name: Install dependencies (CocoaPods)
+      - name: Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods Dependencies
         run: |
           cd ios
-          flutter pub get
-          pod install
+          pod install --repo-update
 
-      # - name: Set up Xcode
-      #   run: |
-      #     sudo xcode-select -s /Applications/Xcode_12.5.app/Contents/Developer
-      #     sudo xcodebuild -version
-
-      - name: Build the app
+      - name: Build the iOS App
         run: |
-          xcodebuild clean build -workspace ios/Runner.xcworkspace -scheme Runner -sdk iphonesimulator
+          cd ios
+          xcodebuild clean build -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator
 
-      - name: Run tests on the iOS Simulator
+      - name: Run Tests on iOS Simulator
         run: |
           xcrun simctl boot "iPhone 12"
-          xcrun simctl launch booted com.yourcompany.YourApp
-          xcodebuild test -workspace ios/Runner.xcworkspace -scheme Runner -destination 'platform=iOS Simulator,name=iPhone 12,OS=14.4' -quiet
+          xcodebuild test -workspace ios/Runner.xcworkspace -scheme Runner -destination 'platform=iOS Simulator,name=iPhone 12,OS=latest' -quiet
