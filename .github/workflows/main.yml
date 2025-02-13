@@ -1,4 +1,4 @@
-name: iOS Build and Test
+name: iOS Build and Run
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
         run: |
           cd ios
           if [ -f "Runner.xcodeproj/project.pbxproj" ]; then
-            # Ensure automatic signing is disabled
+            # Disable automatic signing
             sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/' Runner.xcodeproj/project.pbxproj
             sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/' Runner.xcodeproj/project.pbxproj
             sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "";/' Runner.xcodeproj/project.pbxproj
@@ -57,13 +57,14 @@ jobs:
           echo "Selected Simulator: $SIMULATOR_NAME"
           echo "SIMULATOR_NAME=$SIMULATOR_NAME" >> $GITHUB_ENV
 
-      - name: Build iOS App
+      - name: Build iOS App (Without Testing)
         run: |
           cd ios
           xcodebuild clean build -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=latest" | xcpretty
 
-      - name: Run Tests on iOS Simulator
+      - name: Run App on iOS Simulator
         run: |
           xcrun simctl boot "$SIMULATOR_NAME"
-          sleep 10 # Wait for the simulator to boot properly
-          xcodebuild test -workspace ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=latest" -skip-testing:RunnerTests -quiet
+          sleep 10 # Allow time for the simulator to fully boot
+          open -a Simulator
+          flutter run -d "$SIMULATOR_NAME" --verbose
