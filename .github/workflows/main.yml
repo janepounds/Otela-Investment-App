@@ -36,6 +36,13 @@ jobs:
           rm -rf Pods Podfile.lock
           pod install --repo-update
 
+      - name: Disable Code Signing for Simulator
+        run: |
+          cd ios
+          # Disable automatic signing for the simulator
+          sed -i '' 's/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = /g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = .*/PROVISIONING_PROFILE_SPECIFIER = /g' ios/Runner.xcodeproj/project.pbxproj
+
       - name: Get Available Simulator Name
         run: |
           # Find the first available iPhone simulator
