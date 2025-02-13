@@ -36,4 +36,34 @@ jobs:
           rm -rf Pods Podfile.lock
           pod install --repo-update
 
-      - name: Disable Code Signing for
+      - name: Disable Code Signing for Simulator
+        run: |
+          cd ios
+          if [ -f "Runner.xcodeproj/project.pbxproj" ]; then
+            # Ensure automatic signing is disabled
+            sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/' Runner.xcodeproj/project.pbxproj
+            sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/' Runner.xcodeproj/project.pbxproj
+            sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "";/' Runner.xcodeproj/project.pbxproj
+            sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/' Runner.xcodeproj/project.pbxproj
+          else
+            echo "Runner.xcodeproj/project.pbxproj not found!"
+            exit 1
+          fi
+
+      - name: Get Available Simulator Name
+        run: |
+          # Find the first available iPhone simulator
+          SIMULATOR_NAME=$(xcrun simctl list devices available | grep -m1 'iPhone' | awk -F'[()]' '{print $2}')
+          echo "Selected Simulator: $SIMULATOR_NAME"
+          echo "SIMULATOR_NAME=$SIMULATOR_NAME" >> $GITHUB_ENV
+
+      - name: Build iOS App
+        run: |
+          cd ios
+          xcodebuild clean build -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=latest" | xcpretty
+
+      - name: Run Tests on iOS Simulator
+        run: |
+          xcrun simctl boot "$SIMULATOR_NAME"
+          sleep 10 # Wait for the simulator to boot properly
+          xcodebuild test -workspace ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,name=$SIMULATOR_NAME,OS=latest" -skip-testing:RunnerTests -quiet
