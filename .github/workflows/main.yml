@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest  # Use a macOS runner
+    runs-on: macos-latest
 
     steps:
       - name: Check out repository
@@ -21,18 +21,25 @@ jobs:
         with:
           flutter-version: '3.27.3'
 
+      - name: Clean Flutter Project
+        run: flutter clean
+
+      - name: Delete DerivedData (Xcode Cache)
+        run: rm -rf ~/Library/Developer/Xcode/DerivedData
+
       - name: Install Flutter Dependencies
         run: flutter pub get
 
-      - name: Install CocoaPods Dependencies
+      - name: Remove & Reinstall CocoaPods
         run: |
           cd ios
+          rm -rf Pods Podfile.lock
           pod install --repo-update
 
-      - name: Build the iOS App
+      - name: Build iOS App
         run: |
           cd ios
-          xcodebuild clean build -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator
+          xcodebuild clean build -workspace Runner.xcworkspace -scheme Runner -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 12,OS=latest' | xcpretty
 
       - name: Run Tests on iOS Simulator
         run: |
