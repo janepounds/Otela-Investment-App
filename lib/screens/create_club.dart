@@ -201,214 +201,225 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
               )),
         ],
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20), // Spacing
-          Expanded(
-            // Ensures the form expands to take available space
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: SingleChildScrollView(
-                // Enables scrolling if content is too much
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Your form content here
-                    // Form Section
-                    //   Form Section
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          children: [
-                            _buildTextField(
-                              labelText: 'Stokvel Name',
-                              controller: _stokvelNameController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter  Stokvel name.';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextField(
-                              labelText: 'Stokvel Number if Registered',
-                              controller: _stokvelNumberController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter  Stookvel number.';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            buildDropdownField(
-                                "Purpose of Stokvel", selectedPurpose, purposes,
-                                (value) {
-                              setState(() {
-                                selectedPurpose = value;
-                              });
-                            }),
-                            const SizedBox(
-                              height: 100,
-                            ),
-                            Text(
-                              'Read T’s and C’s',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: AppColors.beige,
+      body: Container(
+        color: Colors.white,
+        width: double.infinity,
+        height: double.infinity,
+        child: Column(
+          children: [
+            const SizedBox(height: 20), // Spacing
+            Expanded(
+              // Ensures the form expands to take available space
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.only(topRight: Radius.circular(30)),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: SingleChildScrollView(
+                  // Enables scrolling if content is too much
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Your form content here
+                      // Form Section
+                      //   Form Section
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              _buildTextField(
+                                labelText: 'Stokvel Name',
+                                controller: _stokvelNameController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter  Stokvel name.';
+                                  }
+                                  return null;
+                                },
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                Checkbox(
-                                    value: _isChecked,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _isChecked = value!;
-                                      });
-                                    },
-                                    checkColor:
-                                        Colors.white, // Color of the checkmark
-                                    activeColor: AppColors
-                                        .darBlue, // Background color when checked
-                                    side: const BorderSide(
-                                      color: AppColors.darBlue, // Border color
-                                      width: 2, // Border width
-                                    )),
-                                Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: RichText(
-                                    text: const TextSpan(
-                                      text: 'I agree to the  ',
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.darBlue),
-                                      children: [
-                                        TextSpan(
-                                          text: 'Terms & Conditions.',
-                                          style: TextStyle(
-                                              decoration:
-                                                  TextDecoration.underline,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                              const SizedBox(height: 16),
+                              _buildTextField(
+                                labelText: 'Stokvel Number if Registered',
+                                controller: _stokvelNumberController,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter  Stookvel number.';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              buildDropdownField("Purpose of Stokvel",
+                                  selectedPurpose, purposes, (value) {
+                                setState(() {
+                                  selectedPurpose = value;
+                                });
+                              }),
+                              const SizedBox(
+                                height: 100,
+                              ),
+                              Text(
+                                'Read T’s and C’s',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.beige,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            _isLoading
-                                ? const CircularProgressIndicator()
-                                : ElevatedButton(
-                                    onPressed: _createStokvel,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.beige,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 70,
-                                        vertical: 12,
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Create Stokvel',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                      value: _isChecked,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _isChecked = value!;
+                                        });
+                                      },
+                                      checkColor: Colors
+                                          .white, // Color of the checkmark
+                                      activeColor: AppColors
+                                          .darBlue, // Background color when checked
+                                      side: const BorderSide(
+                                        color:
+                                            AppColors.darBlue, // Border color
+                                        width: 2, // Border width
+                                      )),
+                                  Align(
+                                    alignment: Alignment.bottomCenter,
+                                    child: RichText(
+                                      text: const TextSpan(
+                                        text: 'I agree to the  ',
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            color: AppColors.darBlue),
+                                        children: [
+                                          TextSpan(
+                                            text: 'Terms & Conditions.',
+                                            style: TextStyle(
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                            const SizedBox(height: 24),
-                          ],
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              _isLoading
+                                  ? const CircularProgressIndicator()
+                                  : ElevatedButton(
+                                      onPressed: _createStokvel,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.beige,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 70,
+                                          vertical: 12,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Create Stokvel',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                              const SizedBox(height: 24),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          // Footer Section
-          Container(
-            margin: const EdgeInsets.symmetric(
-                horizontal: 16), // Add margin to start and end
-            decoration: const BoxDecoration(
-              color: Color(0xFFF4F4F4), // Footer background color
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            padding:
-                const EdgeInsets.symmetric(vertical: 12), // Vertical padding
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                const Text(
-                  '©Otela',
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF113293),
-                      fontWeight: FontWeight.bold),
+            // Footer Section
+            Container(
+              color: Colors.white, // Outer background color set to white
+              child: Container(
+                margin: const EdgeInsets.symmetric(
+                    horizontal: 16), // Add margin to start and end
+                decoration: const BoxDecoration(
+                  color: Color(
+                      0xFFF4F4F4), // Keep the original footer background color
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40),
+                  ),
                 ),
-                Row(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 12), // Vertical padding
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    GestureDetector(
-                      onTap: () {
-                        // Navigate to Privacy
-                      },
-                      child: const Text(
-                        'Privacy',
-                        style: TextStyle(
-                          color: Color(0xFF113293),
+                    const Text(
+                      '©Otela',
+                      style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF113293),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            // Navigate to Privacy
+                          },
+                          child: const Text(
+                            'Privacy',
+                            style: TextStyle(
+                              color: Color(0xFF113293),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: () {
-                        // Navigate to Legal
-                      },
-                      child: const Text(
-                        'Legal',
-                        style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    GestureDetector(
-                      onTap: () {
-                        // Navigate to Contact
-                      },
-                      child: const Text(
-                        'Contact',
-                        style: TextStyle(
-                            color: Color(0xFF113293),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold),
-                      ),
+                        const SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: () {
+                            // Navigate to Legal
+                          },
+                          child: const Text(
+                            'Legal',
+                            style: TextStyle(
+                                color: Color(0xFF113293),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: () {
+                            // Navigate to Contact
+                          },
+                          child: const Text(
+                            'Contact',
+                            style: TextStyle(
+                                color: Color(0xFF113293),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          )
-        ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

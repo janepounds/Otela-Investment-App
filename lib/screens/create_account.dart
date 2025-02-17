@@ -407,46 +407,75 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
             /// 🔥 Footer Section Sticks to Bottom 🔥 ///
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: const BoxDecoration(
-                color: AppColors.footer,
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  const Text(
-                    '©Otela',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.darBlue,
-                        fontWeight: FontWeight.bold),
+              color: Colors.white, // Outer background color set to white
+              child: Container(
+                margin: const EdgeInsets.symmetric(
+                    horizontal: 16), // Add margin to start and end
+                decoration: const BoxDecoration(
+                  color: Color(
+                      0xFFF4F4F4), // Keep the original footer background color
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40),
+                    topRight: Radius.circular(40),
                   ),
-                  const Text(
-                    'Privacy',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.darBlue,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    'Legal',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.darBlue,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    'Contact',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.darBlue,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
+                ),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 12), // Vertical padding
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    const Text(
+                      '©Otela',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF113293),
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            // Navigate to Privacy
+                          },
+                          child: const Text(
+                            'Privacy',
+                            style: TextStyle(
+                              color: Color(0xFF113293),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: () {
+                            // Navigate to Legal
+                          },
+                          child: const Text(
+                            'Legal',
+                            style: TextStyle(
+                                color: Color(0xFF113293),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: () {
+                            // Navigate to Contact
+                          },
+                          child: const Text(
+                            'Contact',
+                            style: TextStyle(
+                                color: Color(0xFF113293),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             )
           ],
