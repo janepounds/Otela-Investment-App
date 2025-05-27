@@ -2,11 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/congratulation_screen.dart';
+import 'package:otela_investment_club_app/screens/loadingOverLay.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String verificationId;
-  
   final String caller; // Identify the calling screen
+
   const VerificationScreen(this.verificationId, {super.key, required this.caller});
 
   @override
@@ -17,26 +18,37 @@ class VerificationScreen extends StatefulWidget {
 class _OtpVerificationScreenState extends State<VerificationScreen> {
   final TextEditingController otpController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
 
   void verifyOTP() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: widget.verificationId,
         smsCode: otpController.text,
       );
+
       await _auth.signInWithCredential(credential);
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-        builder: (context) => CongratulationsScreen(caller: widget.caller))
+          builder: (context) => CongratulationsScreen(caller: widget.caller),
+        ),
       );
-      
-      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Invalid OTP: ${e.toString()}")),
       );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -53,30 +65,36 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
                 child: Container(
                   color: AppColors.beige,
                   child: Center(
-                    child: Image.asset('assets/images/verification_code_no_bg.png', width: 300),
+                    child: Image.asset(
+                      'assets/images/verification_code_no_bg.png',
+                      width: 300,
+                    ),
                   ),
                 ),
               ),
               Expanded(
                 flex: 5,
                 child: Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
                       topRight: Radius.circular(50),
                     ),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Please enter verification code\n sent to you.',
-                          style: TextStyle(color: AppColors.darBlue, fontSize: 16),
+                        const Text(
+                          'Please enter verification code\nsent to you.',
+                          style: TextStyle(
+                            color: AppColors.darBlue,
+                            fontSize: 16,
+                          ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         TextField(
                           controller: otpController,
                           decoration: InputDecoration(
@@ -85,25 +103,29 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide(color: AppColors.gray)
+                              borderSide: const BorderSide(color: AppColors.gray),
                             ),
                           ),
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
                         ),
-                        SizedBox(height: 50),
+                        const SizedBox(height: 50),
                         ElevatedButton(
-                          onPressed: verifyOTP,
+                          onPressed: _isLoading ? null : verifyOTP,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.beige,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            padding: EdgeInsets.symmetric(horizontal: 80, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 12),
                           ),
-                          child: Text(
+                          child: const Text(
                             'Verify Code',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
                       ],
@@ -113,8 +135,13 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
               ),
             ],
           ),
+
+          // Loading Overlay
+          if (_isLoading)
+            const LoadingOverLay(),
         ],
       ),
     );
   }
 }
+

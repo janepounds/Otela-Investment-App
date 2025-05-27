@@ -39,130 +39,125 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-  body: Stack(
-    children: [
-      // Background image
-      Positioned.fill(
-        child: Image.asset(
-          'assets/images/money_tree_bg.png',
-          fit: BoxFit.cover,
-        ),
-      ),
-      // Transparent overlay
-      Positioned.fill(
-        child: Container(
-          color: Colors.white.withOpacity(0.3), // Adjust transparency
-        ),
-      ),
-      Column(
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    resizeToAvoidBottomInset: true,
+    body: SafeArea(
+      child: Stack(
         children: [
-          // Upper section with logout image
-          Container(
-            padding: EdgeInsets.only(top: 50, left: 20, right: 20),
-            width: double.infinity,
-            child: Column(
-              children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: GestureDetector(
-                    onTap: logout,
-                    child: Icon(Icons.menu,
-                        color: Color(0xFF113293), size: 30),
-                  ),
-                ),
-                SizedBox(height: 150),
-                Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.topCenter,
-                  children: [
-                    SvgPicture.asset("assets/icons/logo_color.svg",
-                        width: 300, height: 300),
-                  ],
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'Hi',
-                  style: TextStyle(fontSize: 16, color: Color(0xFF113293)),
-                ),
-                Text(
-                  userName,
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF113293)),
-                ),
-                SizedBox(height: 20),
-              ],
+          // Background image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/money_tree_bg.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          // Transparent overlay
+          Positioned.fill(
+            child: Container(
+              color: Colors.white.withOpacity(0.3),
             ),
           ),
 
-          SizedBox(height: 20),
-
-          // White container with buttons
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppColors.beige.withOpacity(0.8), // Adjust opacity
-                borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(50),
+          /// 🛠️ Scrollable content to avoid overflow
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(top: 50, left: 20, right: 20),
+                  width: double.infinity,
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: GestureDetector(
+                          onTap: logout,
+                          child: const Icon(Icons.menu,
+                              color: Color(0xFF113293), size: 30),
+                        ),
+                      ),
+                      const SizedBox(height: 150),
+                      SvgPicture.asset("assets/icons/logo_color.svg",
+                          width: 300, height: 300),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Hi',
+                        style: TextStyle(fontSize: 16, color: Color(0xFF113293)),
+                      ),
+                      Text(
+                        userName,
+                        style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF113293)),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 8), // Add spacing before the line
-                  Container(
-                    width: 60, // Adjust line width as needed
-                    height: 5, // Adjust thickness
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.7), // Slightly transparent line
-                      borderRadius: BorderRadius.circular(10),
+                const SizedBox(height: 20),
+
+                /// 🧾 White container with buttons
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.beige.withOpacity(0.8),
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(50),
                     ),
                   ),
-                  SizedBox(height: 15),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => JoinStokvelScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF113293),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 14),
-                    ),
-                    child: Text('Join Existing Stokvel',
-                        style: TextStyle(color: Colors.white)),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 8),
+                      Container(
+                        width: 60,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const JoinStokvelScreen()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF113293),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 14),
+                        ),
+                        child: const Text('Join Existing Stokvel',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                      const SizedBox(height: 15),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushReplacementNamed(context, '/createStokvel');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.darBlue,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 14),
+                        ),
+                        child: const Text('Create A New Stokvel',
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 15),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Navigate to the next screen (e.g., Home)
-                      Navigator.pushReplacementNamed(context, '/createStokvel');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.darBlue,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 14),
-                    ),
-                    child: Text('Create A New Stokvel',
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
       ),
-    ],
-  ),
-);
-  }
+    ),
+  );
+}
 }

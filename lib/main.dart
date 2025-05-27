@@ -22,43 +22,13 @@ import 'package:otela_investment_club_app/screens/upload_document_screen.dart';
 
 
 
-void main() async{
- WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Initialize Firebas
 
-  runApp(MaterialApp(
-    initialRoute: '/',
-    routes: {
-      '/': (context) => SplashScreen(),
-      '/login': (context) => LoginScreen(),
-      '/createAccount': (context) => CreateAccountScreen(),
-    //  '/verification': (context) => VerificationScreen(),
-     // '/congratulation': (context) => CongratulationsScreen(),
-      '/dashboard': (context) => DashboardScreen(),
-      '/main': (context) => MainScreen(),
-      '/investing': (context) => InvestingScreen(),
-      '/portfolio': (context) => PortfolioScreen(),
 
-      // Investing-related routes
-      '/fundDetails': (context) => FundDetailsScreen(),
-      '/selectAmount': (context) => SelectAmountScreen(),
-      '/paymentMethod': (context) => PaymentMethodScreen(),
-      '/bankTransfer': (context) => BankTransferScreen(),
-      '/success': (context) => SuccessScreen(),
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
-      //create new club
-      '/createStokvel': (context) => CreateStokvelScreen(),
-      '/uploadDocuments': (context) => UploadDocumentScreen(),
-      '/bankDetails': (context) => BankDetailscreen(),
-      '/joinStokvel': (context) => JoinStokvelScreen(),
-
-      //personal
-      '/kyc': (context) => PersonalKycScreen(),
-      '/personalDetails': (context) => PersonalDetailsScreen(),
-      '/bank': (context) => MyProfileBankDetailScreen(),
-
-    },
-  ));
+  runApp(const MyApp()); // ✅ Use MyApp here
 }
 
 
@@ -66,22 +36,36 @@ void main() async{
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
-   @override
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Otela App',
-      
-      home: SplashScreen(),
       theme: ThemeData(
-        fontFamily: 'Poppins', // Applies 'Poppins' globally to all text
-
-      
-      
-        ),
+        fontFamily: 'Poppins',
+      ),
+      home: SplashScreen(),
+      routes: {
+        '/login': (context) => LoginScreen(),
+        '/createAccount': (context) => CreateAccountScreen(),
+        '/dashboard': (context) => DashboardScreen(),
+        '/main': (context) => MainScreen(),
+        '/investing': (context) => InvestingScreen(),
+        '/portfolio': (context) => PortfolioScreen(),
+        '/fundDetails': (context) => FundDetailsScreen(),
+        '/selectAmount': (context) => SelectAmountScreen(),
+        '/paymentMethod': (context) => PaymentMethodScreen(),
+        '/bankTransfer': (context) => BankTransferScreen(),
+        '/success': (context) => SuccessScreen(),
+        '/createStokvel': (context) => CreateStokvelScreen(),
+        '/uploadDocuments': (context) => UploadDocumentScreen(),
+        '/bankDetails': (context) => BankDetailscreen(),
+        '/joinStokvel': (context) => JoinStokvelScreen(),
+        '/kyc': (context) => PersonalKycScreen(),
+        '/personalDetails': (context) => PersonalDetailsScreen(),
+        '/bank': (context) => MyProfileBankDetailScreen(),
+      },
     );
- 
   }
 }
 

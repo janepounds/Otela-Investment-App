@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:otela_investment_club_app/colors.dart';
+import 'package:otela_investment_club_app/screens/congratulation_screen.dart';
+import 'package:otela_investment_club_app/screens/loadingOverLay.dart';
 
 import 'package:otela_investment_club_app/screens/verification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,95 +48,88 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     });
   }
 
-  Future<void> _createStokvel() async {
-    if (!_formKey.currentState!.validate() || !_isChecked) {
-      if (!_isChecked) {
-        Fluttertoast.showToast(
-          msg: 'You must agree to the Terms and Conditions',
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
-      }
-      return;
-    }
 
-    setState(() {
-      _isLoading = true;
-    });
 
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Reference to Firestore
-        FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-        // Get user details from Firestore
-        DocumentSnapshot userDoc =
-            await firestore.collection('users').doc(user.uid).get();
-
-        if (userDoc.exists) {
-          // Extract user details
-          String memberFirstName = userDoc['firstName'] ?? 'Unknown';
-          String memberLastName = userDoc['lastName'] ?? 'Unknown';
-          String memberPhone = userDoc['phone'] ?? 'Unknown';
-
-          DocumentReference stokvelRef = await FirebaseFirestore.instance
-              .collection('stokvels') // Top-level collection
-              .add({
-            'stokvelName': _stokvelNameController.text.trim(),
-            'stokvelNumber': _stokvelNumberController.text.trim(),
-            'stokvelPurpose': selectedPurpose,
-            'createdBy': user.uid, // Store the creator's userId
-            'createdAt': Timestamp.now(),
-          });
-
-          // Add creator as a member and admin in the stokvel
-          await stokvelRef.collection('members').doc(user.uid).set({
-            'role': 'admin', // Creator is the admin
-            'firstName': memberFirstName,
-            'lastName': memberLastName,
-            'phone': memberPhone,
-            'roboAdvisor': false, // Default value
-            'amountPaid': 0,
-            'status': 'Pending',
-            'joinedAt': Timestamp.now(),
-          });
-
-          Fluttertoast.showToast(
-            msg: 'Stokvel Created Successfully',
-            backgroundColor: Colors.green,
-            textColor: Colors.white,
-          );
-        }
-      }
-
-      //send otp and navigate to verifcation screen
-
-      // Fluttertoast.showToast(
-      //   msg: 'Account created successfully!',
-      //   backgroundColor: Colors.green,
-      //   textColor: Colors.white,
-      // );
-
-      //save stokvel name in shared preferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('stokvelName', _stokvelNameController.text.trim());
-
-      // Navigator.pushReplacementNamed(context, '/login');
-
-      sendOTP();
-    } on FirebaseAuthException catch (e) {
+ Future<void> _createStokvel() async {
+  if (!_formKey.currentState!.validate() || !_isChecked) {
+    if (!_isChecked) {
       Fluttertoast.showToast(
-        msg: e.message ?? 'An error occurred.',
+        msg: 'You must agree to the Terms and Conditions',
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
+    return;
   }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw FirebaseAuthException(message: "User not found", code: "401");
+
+    final userId = user.uid;
+    final DatabaseReference db = FirebaseDatabase.instance.ref();
+
+    // Fetch user details
+    final userSnapshot = await db.child('users/$userId').get();
+    if (!userSnapshot.exists) throw Exception("User record not found.");
+
+    final userData = Map<String, dynamic>.from(userSnapshot.value as Map);
+
+    // Create a new stokvel and push it to database
+    final stokvelRef = db.child('stokvels').push();
+    final stokvelId = stokvelRef.key;
+
+    await stokvelRef.set({
+      'stokvelName': _stokvelNameController.text.trim(),
+      'stokvelNumber': _stokvelNumberController.text.trim(),
+      'stokvelPurpose': selectedPurpose,
+      'createdBy': userId,
+      'createdAt': DateTime.now().toIso8601String(),
+    });
+
+    // Add current user as admin/member under the stokvel
+    await db.child('stokvels/$stokvelId/members/$userId').set({
+      'role': 'admin',
+      'firstName': userData['firstName'],
+      'lastName': userData['lastName'],
+      'phone': userData['phone'],
+      'roboAdvisor': false,
+      'amountPaid': 0,
+      'status': 'Pending',
+      'joinedAt': DateTime.now().toIso8601String(),
+    });
+
+    Fluttertoast.showToast(
+      msg: 'Stokvel Created Successfully',
+      backgroundColor: Colors.green,
+      textColor: Colors.white,
+    );
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('stokvelName', _stokvelNameController.text.trim());
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CongratulationsScreen(caller: "Create Stokvel"),
+      ),
+    );
+  } catch (e) {
+    Fluttertoast.showToast(
+      msg: e.toString(),
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
 
   void sendOTP() async {
     await _auth.verifyPhoneNumber(
@@ -165,51 +160,47 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.beige,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text("Create Stokvel",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'poppins')),
-              SizedBox(height: 4),
-              Text("Enter your details",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontFamily: 'poppins')),
-            ],
-          ),
-        ),
-        actions: [
-          Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: const Icon(
-                Icons.menu, // Example menu icon
-                color: Colors.white,
-                size: 30,
-              )),
-        ],
-      ),
-      body: Container(
-        color: Colors.white,
-        width: double.infinity,
-        height: double.infinity,
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: AppColors.beige,
+    resizeToAvoidBottomInset: true, // Handle keyboard overlapping
+    appBar: AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      title: Padding(
+        padding: const EdgeInsets.only(left: 8.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text("Create Stokvel",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'poppins')),
+            SizedBox(height: 4),
+            Text("Enter your details",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontFamily: 'poppins')),
+          ],
+        ),
+      ),
+      actions: const [
+        Padding(
+          padding: EdgeInsets.only(right: 16.0),
+          child: Icon(Icons.menu, color: Colors.white, size: 30),
+        ),
+      ],
+    ),
+    body: Stack(
+      children: [
+        Column(
           children: [
-            const SizedBox(height: 20), // Spacing
+            const SizedBox(height: 20),
             Expanded(
-              // Ensures the form expands to take available space
               child: Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -218,149 +209,127 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                 ),
                 padding: const EdgeInsets.all(16),
                 child: SingleChildScrollView(
-                  // Enables scrolling if content is too much
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Your form content here
-                      // Form Section
-                      //   Form Section
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              _buildTextField(
-                                labelText: 'Stokvel Name',
-                                controller: _stokvelNameController,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter  Stokvel name.';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              _buildTextField(
-                                labelText: 'Stokvel Number if Registered',
-                                controller: _stokvelNumberController,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter  Stookvel number.';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              buildDropdownField("Purpose of Stokvel",
-                                  selectedPurpose, purposes, (value) {
-                                setState(() {
-                                  selectedPurpose = value;
-                                });
-                              }),
-                              const SizedBox(
-                                height: 100,
-                              ),
-                              Text(
-                                'Read T’s and C’s',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.beige,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  Checkbox(
-                                      value: _isChecked,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _isChecked = value!;
-                                        });
-                                      },
-                                      checkColor: Colors
-                                          .white, // Color of the checkmark
-                                      activeColor: AppColors
-                                          .darBlue, // Background color when checked
-                                      side: const BorderSide(
-                                        color:
-                                            AppColors.darBlue, // Border color
-                                        width: 2, // Border width
-                                      )),
-                                  Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: RichText(
-                                      text: const TextSpan(
-                                        text: 'I agree to the  ',
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.darBlue),
-                                        children: [
-                                          TextSpan(
-                                            text: 'Terms & Conditions.',
-                                            style: TextStyle(
-                                                decoration:
-                                                    TextDecoration.underline,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              _isLoading
-                                  ? const CircularProgressIndicator()
-                                  : ElevatedButton(
-                                      onPressed: _createStokvel,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.beige,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 70,
-                                          vertical: 12,
-                                        ),
-                                      ),
-                                      child: const Text(
-                                        'Create Stokvel',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                              const SizedBox(height: 24),
-                            ],
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildTextField(
+                          labelText: 'Stokvel Name',
+                          controller: _stokvelNameController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter Stokvel name.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          labelText: 'Stokvel Number if Registered',
+                          controller: _stokvelNumberController,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter Stokvel number.';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        buildDropdownField(
+                          "Purpose of Stokvel",
+                          selectedPurpose,
+                          purposes,
+                          (value) {
+                            setState(() {
+                              selectedPurpose = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 32),
+                        Text(
+                          'Read T’s and C’s',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppColors.beige,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Checkbox(
+                              value: _isChecked,
+                              onChanged: (value) {
+                                setState(() {
+                                  _isChecked = value!;
+                                });
+                              },
+                              checkColor: Colors.white,
+                              activeColor: AppColors.darBlue,
+                              side: const BorderSide(
+                                  color: AppColors.darBlue, width: 2),
+                            ),
+                            Expanded(
+                              child: RichText(
+                                text: const TextSpan(
+                                  text: 'I agree to the  ',
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.darBlue),
+                                  children: [
+                                    TextSpan(
+                                      text: 'Terms & Conditions.',
+                                      style: TextStyle(
+                                          decoration: TextDecoration.underline,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _createStokvel,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.beige,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 70, vertical: 12),
+                          ),
+                          child: const Text(
+                            'Create Stokvel',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-            // Footer Section
+
+            // Footer
             Container(
-              color: Colors.white, // Outer background color set to white
+              color: Colors.white,
               child: Container(
-                margin: const EdgeInsets.symmetric(
-                    horizontal: 16), // Add margin to start and end
+                margin: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: const BoxDecoration(
-                  color: Color(
-                      0xFFF4F4F4), // Keep the original footer background color
+                  color: Color(0xFFF4F4F4),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(40),
                     topRight: Radius.circular(40),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(
-                    vertical: 12), // Vertical padding
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -380,10 +349,9 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                           child: const Text(
                             'Privacy',
                             style: TextStyle(
-                              color: Color(0xFF113293),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF113293)),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -394,9 +362,9 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                           child: const Text(
                             'Legal',
                             style: TextStyle(
-                                color: Color(0xFF113293),
                                 fontSize: 12,
-                                fontWeight: FontWeight.bold),
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF113293)),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -407,9 +375,9 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                           child: const Text(
                             'Contact',
                             style: TextStyle(
-                                color: Color(0xFF113293),
                                 fontSize: 12,
-                                fontWeight: FontWeight.bold),
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF113293)),
                           ),
                         ),
                       ],
@@ -417,12 +385,17 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
-      ),
-    );
-  }
+
+        // Loader
+        if (_isLoading) const LoadingOverLay(),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildTextField({
     required String labelText,

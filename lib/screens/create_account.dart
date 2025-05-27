@@ -34,67 +34,62 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   String _selectedCountryCode = '+256';
   final List<String> _countryCodes = ['+256', '+254', '+270', '+291', '+261'];
 
-  Future<void> _signUp() async {
-    if (!_formKey.currentState!.validate() || !_isChecked) {
-      if (!_isChecked) {
-        Fluttertoast.showToast(
-          msg: 'You must agree to the Terms and Conditions',
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-        );
-      }
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      await _firestore.collection('users').doc(userCredential.user?.uid).set({
-        'firstName': _firstNameController.text.trim(),
-        'lastName': _lastNameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'phone': '$_selectedCountryCode ${_phoneController.text.trim()}',
-        'createdAt': Timestamp.now(), // Firestore timestamp
-      });
-
-      //send otp and navigate to verifcation screen
-
-      // Fluttertoast.showToast(
-      //   msg: 'Account created successfully!',
-      //   backgroundColor: Colors.green,
-      //   textColor: Colors.white,
-      // );
-
-      //save first name in shared preferences
-      final String phoneNo =
-          '$_selectedCountryCode ${_phoneController.text.trim()}';
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('firstName', _firstNameController.text.trim());
-      await prefs.setString('phone', phoneNo);
-
-      // Navigator.pushReplacementNamed(context, '/login');
-
-      sendOTP();
-    } on FirebaseAuthException catch (e) {
+ Future<void> _signUp() async {
+  if (!_formKey.currentState!.validate() || !_isChecked) {
+    if (!_isChecked) {
       Fluttertoast.showToast(
-        msg: e.message ?? 'An error occurred.',
+        msg: 'You must agree to the Terms and Conditions',
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
+    return;
   }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    // Create user with Firebase Auth
+    UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      email: _emailController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
+    final String uid = userCredential.user!.uid;
+    final String phoneNo = '$_selectedCountryCode ${_phoneController.text.trim()}';
+
+    // Save user details in Realtime Database
+    final DatabaseReference usersRef = FirebaseDatabase.instance.ref().child('users');
+    await usersRef.child(uid).set({
+      'firstName': _firstNameController.text.trim(),
+      'lastName': _lastNameController.text.trim(),
+      'email': _emailController.text.trim(),
+      'phone': phoneNo,
+      'createdAt': DateTime.now().toIso8601String(), // store timestamp as ISO string
+    });
+
+    // Save basic user info in SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('firstName', _firstNameController.text.trim());
+    await prefs.setString('phone', phoneNo);
+
+    // Proceed to send OTP and navigate
+    sendOTP();
+  } on FirebaseAuthException catch (e) {
+    Fluttertoast.showToast(
+      msg: e.message ?? 'An error occurred.',
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
+
 
   void sendOTP() async {
     await _auth.verifyPhoneNumber(

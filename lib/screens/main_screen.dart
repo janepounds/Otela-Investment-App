@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:otela_investment_club_app/colors.dart';
@@ -99,22 +100,32 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _fetchStokvelId();
   }
-
   Future<void> _fetchStokvelId() async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      QuerySnapshot stokvelsQuery = await FirebaseFirestore.instance
-          .collection('stokvels')
-          .where('createdBy', isEqualTo: user.uid)
-          .get();
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    final userId = user.uid;
+    final snapshot = await FirebaseDatabase.instance.ref('stokvels').get();
 
-      if (stokvelsQuery.docs.isNotEmpty) {
+    if (snapshot.exists) {
+      final stokvels = snapshot.value as Map<dynamic, dynamic>;
+      final entry = stokvels.entries.firstWhere(
+        (e) => e.value['createdBy'] == userId,
+        orElse: () => MapEntry(null, null),
+      );
+
+      if (entry.key != null) {
         setState(() {
-          stokvelId = stokvelsQuery.docs.first.id; // Use first stokvel ID found
+          stokvelId = entry.key.toString();
         });
       }
     }
   }
+}
+
+Stream<DatabaseEvent> fetchMembersStream() {
+  if (stokvelId == null) return const Stream.empty();
+  return FirebaseDatabase.instance.ref('stokvels/$stokvelId/members').onValue;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -189,59 +200,33 @@ class _MainScreenState extends State<MainScreen> {
                           ),
                           const SizedBox(height: 8),
                           // Large Number
-                          StreamBuilder<QuerySnapshot>(
-                            stream: FirebaseFirestore.instance
-                                .collection('stokvels')
-                                .doc(stokvelId)
-                                .collection('members')
-                                .snapshots(),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              }
+                        StreamBuilder<DatabaseEvent>(
+  stream: fetchMembersStream(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CircularProgressIndicator();
+    }
 
-                              // Get all members
-                              var members = snapshot.data!.docs;
+    if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+      return const Text("No Members");
+    }
 
-                              // Count total members
-                              int totalMembers = members.length;
+    final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+    final members = data.values.toList();
 
-                              // Count members who were invited
-                              int invitedCount = members
-                                  .where((doc) => doc['status'] == 'invited')
-                                  .length;
+    int total = members.length;
+    int invited = members.where((m) => m['status'] == 'invited').length;
+    int joined = members.where((m) => m['status'] == 'joined').length;
 
-                              // Count members who signed up
-                              int signedUpCount = members
-                                  .where((doc) => doc['status'] == 'joined')
-                                  .length;
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    "$totalMembers", // Display total members dynamically
-                                    style: const TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Smaller Stats
-                                  Text("Invited = $invitedCount",
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.darBlue)),
-                                  Text("Signed Up = $signedUpCount",
-                                      style: TextStyle(
-                                          fontSize: 14,
-                                          color: AppColors.darBlue)),
-                                ],
-                              );
-                            },
-                          ),
+    return Column(
+      children: [
+        Text("$total", style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green)),
+        Text("Invited = $invited", style: TextStyle(color: AppColors.darBlue)),
+        Text("Signed Up = $joined", style: TextStyle(color: AppColors.darBlue)),
+      ],
+    );
+  },
+),
                         ],
                       ),
                     ),
