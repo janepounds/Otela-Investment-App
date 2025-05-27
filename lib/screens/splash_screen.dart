@@ -18,24 +18,21 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
 
     // Delay to show splash screen for 2 seconds
-    Future.delayed(const Duration(seconds: 3), () {
-      // Listen to auth state changes to get accurate current user
-      FirebaseAuth.instance.authStateChanges().listen((User? user) {
-        if (user == null) {
-          print("🚪 User NOT logged in, navigating to AnimatedScreens.");
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const AnimatedScreens()),
-          );
-        } else {
-          print("✅ User logged in with UID: ${user.uid}");
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const AnimatedScreens()),
-          );
-        }
-      });
-    });
+  Future.delayed(const Duration(seconds: 3), () {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const AnimatedScreens()),
+    );
+  } else {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const AnimatedScreens()),
+    );
+  }
+});
+
   }
 
   @override

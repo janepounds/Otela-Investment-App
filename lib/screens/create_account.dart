@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,7 +37,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   String _selectedCountryCode = '+256';
   final List<String> _countryCodes = ['+256', '+254', '+270', '+291', '+261'];
 
- Future<void> _signUp() async {
+Future<void> _signUp() async {
   if (!_formKey.currentState!.validate() || !_isChecked) {
     if (!_isChecked) {
       Fluttertoast.showToast(
@@ -46,12 +49,10 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     return;
   }
 
-  setState(() {
-    _isLoading = true;
-  });
+  setState(() => _isLoading = true);
 
   try {
-    // Create user with Firebase Auth
+    // ✅ Create user
     UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
@@ -60,23 +61,29 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     final String uid = userCredential.user!.uid;
     final String phoneNo = '$_selectedCountryCode ${_phoneController.text.trim()}';
 
-    // Save user details in Realtime Database
-    final DatabaseReference usersRef = FirebaseDatabase.instance.ref().child('users');
-    await usersRef.child(uid).set({
-      'firstName': _firstNameController.text.trim(),
-      'lastName': _lastNameController.text.trim(),
-      'email': _emailController.text.trim(),
-      'phone': phoneNo,
-      'createdAt': DateTime.now().toIso8601String(), // store timestamp as ISO string
-    });
+    // ✅ Save to Firebase Realtime Database
+    try {
+      final DatabaseReference usersRef = FirebaseDatabase.instance.ref().child('users');
+      await usersRef.child(uid).set({
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': phoneNo,
+        'createdAt': DateTime.now().toIso8601String(),
+      });
+      print('✅ User data saved to Realtime Database');
+    } catch (e) {
+      print('❌ Error saving user data: $e');
+    }
 
-    // Save basic user info in SharedPreferences
+    // ✅ Save to SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('firstName', _firstNameController.text.trim());
     await prefs.setString('phone', phoneNo);
 
-    // Proceed to send OTP and navigate
-    sendOTP();
+    // ✅ Send OTP (make sure this is async and handles navigation)
+    await sendOTP();
+
   } on FirebaseAuthException catch (e) {
     Fluttertoast.showToast(
       msg: e.message ?? 'An error occurred.',
@@ -84,41 +91,56 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       textColor: Colors.white,
     );
   } finally {
-    setState(() {
-      _isLoading = false;
-    });
+    setState(() => _isLoading = false);
   }
 }
 
 
-  void sendOTP() async {
-    await _auth.verifyPhoneNumber(
-      phoneNumber: '$_selectedCountryCode ${_phoneController.text.trim()}',
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await _auth.signInWithCredential(credential);
-        // Navigate to the next screen
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Verification failed: ${e.message}")),
-        );
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        setState(() {
-          this.verificationId = verificationId;
-        });
-        // Navigate to OTP screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                VerificationScreen(verificationId, caller: "Create Account"),
-          ),
-        );
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {},
-    );
-  }
+
+ Future<void> sendOTP() async {
+  Completer<void> completer = Completer<void>();
+
+ await _auth.verifyPhoneNumber(
+    phoneNumber: '$_selectedCountryCode ${_phoneController.text.trim()}',
+    verificationCompleted: (PhoneAuthCredential credential) async {
+      try {
+        // 🔗 Link phone number with current user (email/password)
+        await _auth.currentUser?.linkWithCredential(credential);
+        print("✅ Phone number linked to current user");
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'provider-already-linked') {
+          print('⚠️ Phone provider already linked.');
+        } else if (e.code == 'credential-already-in-use') {
+          print('❌ This phone number is already used by another account.');
+        } else {
+          print('❌ Failed to link phone number: ${e.message}');
+        }
+      }
+    },
+    verificationFailed: (FirebaseAuthException e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Verification failed: ${e.message}")),
+      );
+    },
+    codeSent: (String verificationId, int? resendToken) {
+      setState(() {
+        this.verificationId = verificationId;
+      });
+      // Navigate to OTP screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              VerificationScreen(verificationId, caller: "Create Account"),
+        ),
+      );
+    },
+    codeAutoRetrievalTimeout: (String verificationId) {},
+  );
+
+  return completer.future;
+}
+
 
   @override
   Widget build(BuildContext context) {

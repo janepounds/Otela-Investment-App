@@ -20,37 +20,46 @@ class _OtpVerificationScreenState extends State<VerificationScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
 
-  void verifyOTP() async {
-    setState(() {
-      _isLoading = true;
-    });
+void verifyOTP() async {
+  setState(() {
+    _isLoading = true;
+  });
 
-    try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: widget.verificationId,
-        smsCode: otpController.text,
-      );
+  try {
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+      verificationId: widget.verificationId,
+      smsCode: otpController.text,
+    );
 
-      await _auth.signInWithCredential(credential);
+    // 🔗 Link the phone credential to the currently logged-in user
+    await FirebaseAuth.instance.currentUser?.linkWithCredential(credential);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CongratulationsScreen(caller: widget.caller),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Invalid OTP: ${e.toString()}")),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CongratulationsScreen(caller: widget.caller),
+      ),
+    );
+  } on FirebaseAuthException catch (e) {
+    String errorMessage = "Invalid OTP: ${e.message}";
+    if (e.code == 'provider-already-linked') {
+      errorMessage = "Phone number already linked to this account.";
+    } else if (e.code == 'credential-already-in-use') {
+      errorMessage = "This phone number is already used by another account.";
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(errorMessage)),
+    );
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
