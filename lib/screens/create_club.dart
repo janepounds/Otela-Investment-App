@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/congratulation_screen.dart';
 import 'package:otela_investment_club_app/screens/loadingOverLay.dart';
+import 'package:otela_investment_club_app/screens/stokvel_congratulations.dart';
 
 import 'package:otela_investment_club_app/screens/verification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -116,7 +117,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CongratulationsScreen(caller: "Create Stokvel"),
+        builder: (context) => StokvelCongratulationsScreen(),
       ),
     );
   } catch (e) {
@@ -153,7 +154,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                VerificationScreen(verificationId, caller: "Create Club"),
+                VerificationScreen(verificationId),
           ),
         );
       },

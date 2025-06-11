@@ -213,7 +213,7 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
         child: Text(
           text,
           style: const TextStyle(
-              fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+              fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );

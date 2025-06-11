@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/animated_screens.dart';
+import 'package:otela_investment_club_app/screens/main_screen.dart';
 // Make sure to import your MainScreen
 
 class SplashScreen extends StatefulWidget {
@@ -28,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
   } else {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const AnimatedScreens()),
+      MaterialPageRoute(builder: (context) => const MainScreen()),
     );
   }
 });

@@ -6,9 +6,8 @@ import 'package:otela_investment_club_app/screens/loadingOverLay.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String verificationId;
-  final String caller; // Identify the calling screen
 
-  const VerificationScreen(this.verificationId, {super.key, required this.caller});
+  const VerificationScreen(this.verificationId, {super.key});
 
   @override
   // ignore: library_private_types_in_public_api
@@ -37,7 +36,7 @@ void verifyOTP() async {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => CongratulationsScreen(caller: widget.caller),
+        builder: (context) => CongratulationsScreen(),
       ),
     );
   } on FirebaseAuthException catch (e) {

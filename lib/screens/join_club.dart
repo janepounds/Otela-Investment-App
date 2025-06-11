@@ -139,7 +139,7 @@ class _JoinStokvelScreenState extends State<JoinStokvelScreen> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                VerificationScreen(verificationId, caller: "Create Stokvel"),
+                VerificationScreen(verificationId),
           ),
         );
       },

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/dashboard_screen.dart';
+import 'package:otela_investment_club_app/screens/personal_details_screen.dart';
+import 'package:otela_investment_club_app/screens/stokvel_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CongratulationsScreen extends StatefulWidget {
-  const CongratulationsScreen({super.key});
+class StokvelCongratulationsScreen extends StatefulWidget {
+  const StokvelCongratulationsScreen({super.key});
 
   @override
   // ignore: library_private_types_in_public_api
-  _CongratulationsScreenState createState() => _CongratulationsScreenState();
+  _StokvelCongratulationsScreenState createState() => _StokvelCongratulationsScreenState();
 }
 
-class _CongratulationsScreenState extends State<CongratulationsScreen> {
+class _StokvelCongratulationsScreenState extends State<StokvelCongratulationsScreen> {
   String userName = '';
   String stokvel = '';
 
@@ -82,7 +84,7 @@ Widget build(BuildContext context) {
                       ),
                     ),
                     SizedBox(height: 10),
-                    Text( "You have successfully created your account!" ,
+                    Text("$stokvel has been successfully registered!",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: AppColors.darBlue,
@@ -99,18 +101,20 @@ Widget build(BuildContext context) {
                     SizedBox(height: 40),
                     ElevatedButton(
                       onPressed: () {
+                        
                           Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => DashboardScreen()),
-                          );                      
+                                builder: (context) => StokvelDetailsScreen()),
+                          );
+                        
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.beige,
                         padding:
                             EdgeInsets.symmetric(horizontal: 80, vertical: 12),
                       ),
-                      child: Text( "Next",
+                      child: Text("STOKVEL PROFILE",
                         style: TextStyle(color: Colors.white),
                       ),
                     ),

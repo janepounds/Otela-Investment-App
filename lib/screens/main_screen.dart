@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,8 @@ import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/investing/fund_details_screen.dart';
 import 'package:otela_investment_club_app/screens/members_details.dart';
 import 'package:otela_investment_club_app/screens/portifolio_management/portfolio.dart';
+import 'package:otela_investment_club_app/screens/robo_advisor_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -72,7 +73,7 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
-     if (index == 2) {
+    if (index == 2) {
       // If "Invest" tab is tapped
 
       // Navigate or perform any action
@@ -80,7 +81,7 @@ class _MainScreenState extends State<MainScreen> {
         context,
         MaterialPageRoute(builder: (context) => FundDetailsScreen()),
       );
-     }
+    }
 
     if (index == 3) {
       // If "Invest" tab is tapped
@@ -100,32 +101,33 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     _fetchStokvelId();
   }
+
   Future<void> _fetchStokvelId() async {
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    final userId = user.uid;
-    final snapshot = await FirebaseDatabase.instance.ref('stokvels').get();
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final snapshot = await FirebaseDatabase.instance.ref('stokvels').get();
 
-    if (snapshot.exists) {
-      final stokvels = snapshot.value as Map<dynamic, dynamic>;
-      final entry = stokvels.entries.firstWhere(
-        (e) => e.value['createdBy'] == userId,
-        orElse: () => MapEntry(null, null),
-      );
+      if (snapshot.exists) {
+        final stokvels = snapshot.value as Map<dynamic, dynamic>;
+        final entry = stokvels.entries.firstWhere(
+          (e) => e.value['createdBy'] == userId,
+          orElse: () => MapEntry(null, null),
+        );
 
-      if (entry.key != null) {
-        setState(() {
-          stokvelId = entry.key.toString();
-        });
+        if (entry.key != null) {
+          setState(() {
+            stokvelId = entry.key.toString();
+          });
+        }
       }
     }
   }
-}
 
-Stream<DatabaseEvent> fetchMembersStream() {
-  if (stokvelId == null) return const Stream.empty();
-  return FirebaseDatabase.instance.ref('stokvels/$stokvelId/members').onValue;
-}
+  Stream<DatabaseEvent> fetchMembersStream() {
+    if (stokvelId == null) return const Stream.empty();
+    return FirebaseDatabase.instance.ref('stokvels/$stokvelId/members').onValue;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -200,33 +202,48 @@ Stream<DatabaseEvent> fetchMembersStream() {
                           ),
                           const SizedBox(height: 8),
                           // Large Number
-                        StreamBuilder<DatabaseEvent>(
-  stream: fetchMembersStream(),
-  builder: (context, snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const CircularProgressIndicator();
-    }
+                          StreamBuilder<DatabaseEvent>(
+                            stream: fetchMembersStream(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
 
-    if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
-      return const Text("No Members");
-    }
+                              if (!snapshot.hasData ||
+                                  snapshot.data!.snapshot.value == null) {
+                                return const Text("No Members");
+                              }
 
-    final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-    final members = data.values.toList();
+                              final data = snapshot.data!.snapshot.value
+                                  as Map<dynamic, dynamic>;
+                              final members = data.values.toList();
 
-    int total = members.length;
-    int invited = members.where((m) => m['status'] == 'invited').length;
-    int joined = members.where((m) => m['status'] == 'joined').length;
+                              int total = members.length;
+                              int invited = members
+                                  .where((m) => m['status'] == 'invited')
+                                  .length;
+                              int joined = members
+                                  .where((m) => m['status'] == 'joined')
+                                  .length;
 
-    return Column(
-      children: [
-        Text("$total", style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.green)),
-        Text("Invited = $invited", style: TextStyle(color: AppColors.darBlue)),
-        Text("Signed Up = $joined", style: TextStyle(color: AppColors.darBlue)),
-      ],
-    );
-  },
-),
+                              return Column(
+                                children: [
+                                  Text("$total",
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.green)),
+                                  Text("Invited = $invited",
+                                      style:
+                                          TextStyle(color: AppColors.darBlue)),
+                                  Text("Signed Up = $joined",
+                                      style:
+                                          TextStyle(color: AppColors.darBlue)),
+                                ],
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -261,7 +278,7 @@ Stream<DatabaseEvent> fetchMembersStream() {
                                 Text(
                                   "Contribution (ZAR)",
                                   style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.darBlue),
                                 ),
@@ -280,7 +297,7 @@ Stream<DatabaseEvent> fetchMembersStream() {
                           Text(
                             "155,000", // Replace with actual data
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: AppColors.red,
                             ),
@@ -289,10 +306,10 @@ Stream<DatabaseEvent> fetchMembersStream() {
                           // Smaller Stats
                           Text("Target = 500,000",
                               style: TextStyle(
-                                  fontSize: 14, color: AppColors.darBlue)),
+                                  fontSize: 10, color: AppColors.darBlue)),
                           Text("Unpaid = 345,000",
                               style: TextStyle(
-                                  fontSize: 14, color: AppColors.darBlue)),
+                                  fontSize: 10, color: AppColors.darBlue)),
                         ],
                       ),
                     ),
@@ -434,6 +451,10 @@ Stream<DatabaseEvent> fetchMembersStream() {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Define your action here
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => RoboAdvisorScreen()),
+          );
         },
         backgroundColor: AppColors.darBlue, // Set your FAB color
         shape: const CircleBorder(),
@@ -505,8 +526,12 @@ Widget buildInvestmentCard(String title, String subtitle, String image) {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: () {},
-                child: const Text("Invest"),
+                onPressed: _launchUrl,
+                child: const Text(
+                  'Invest',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -514,6 +539,13 @@ Widget buildInvestmentCard(String title, String subtitle, String image) {
       ),
     ),
   );
+}
+
+Future<void> _launchUrl() async {
+  final Uri _url = Uri.parse('https://satrix.co.za/products');
+  if (!await launchUrl(_url)) {
+    throw Exception('Could not launch $_url');
+  }
 }
 
 // 🔹 Section Title Widget
@@ -541,7 +573,6 @@ Widget buildIndicator(bool isActive) {
   );
 }
 
-
 Future<void> showSignOutDialog(BuildContext context, VoidCallback onSignOut) {
   return showDialog(
     context: context,
@@ -552,7 +583,8 @@ Future<void> showSignOutDialog(BuildContext context, VoidCallback onSignOut) {
         ),
         title: Column(
           children: [
-            Icon(Icons.exit_to_app, size: 50, color: Colors.red), // Sign-out icon
+            Icon(Icons.exit_to_app,
+                size: 50, color: Colors.red), // Sign-out icon
             const SizedBox(height: 10),
             const Text(
               "Sign Out",
@@ -580,11 +612,11 @@ Future<void> showSignOutDialog(BuildContext context, VoidCallback onSignOut) {
               onSignOut(); // Perform sign-out action
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Sign Out", style: TextStyle(color: Colors.white)),
+            child:
+                const Text("Sign Out", style: TextStyle(color: Colors.white)),
           ),
         ],
       );
     },
   );
 }
-

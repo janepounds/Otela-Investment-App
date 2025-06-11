@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -21,12 +23,15 @@ class _InviteMembersScreenState extends State<InviteMembersScreen> {
   List<Contact> selectedContacts = [];
   final TextEditingController _messageController = TextEditingController();
   String dynamicLink = ""; // Placeholder for generated link
+  final Map<String, String> adminCache = {};
+  String? stokvelId;
 
   @override
   void initState() {
     super.initState();
     _requestPermissions();
     generateDynamicLink();
+    _fetchStokvelId();
   }
 
   /// Request Contacts Permission
@@ -37,6 +42,33 @@ class _InviteMembersScreenState extends State<InviteMembersScreen> {
     } else {
       print("Contacts permission denied");
     }
+  }
+
+  Future<void> _fetchStokvelId() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final userId = user.uid;
+      final snapshot = await FirebaseDatabase.instance.ref('stokvels').get();
+
+      if (snapshot.exists) {
+        final stokvels = snapshot.value as Map<dynamic, dynamic>;
+        final entry = stokvels.entries.firstWhere(
+          (e) => e.value['createdBy'] == userId,
+          orElse: () => MapEntry(null, null),
+        );
+
+        if (entry.key != null) {
+          setState(() {
+            stokvelId = entry.key.toString();
+          });
+        }
+      }
+    }
+  }
+
+  Stream<DatabaseEvent> fetchMembersStream() {
+    if (stokvelId == null) return const Stream.empty();
+    return FirebaseDatabase.instance.ref('stokvels/$stokvelId/members').onValue;
   }
 
   /// Generate Dynamic Link
@@ -59,34 +91,37 @@ Best regards,
   }
 
   /// Create Firebase Dynamic Link
-Future<String> createDynamicLink(String stokvelId) async {
-  final DynamicLinkParameters parameters = DynamicLinkParameters(
-    uriPrefix: "https://otelainvestmentclubapp.page.link",
-    link: Uri.parse("https://otelainvestmentclubapp.com/invite?stokvelId=$stokvelId"),
-    androidParameters: AndroidParameters(
-      packageName: "com.example.otela_investment_club_app",
-      minimumVersion: 1,
-      fallbackUrl: Uri.parse("https://www.dropbox.com/scl/fi/wmkpc2lt2fi5tc6bdazka/app-debug.apk?rlkey=vf5r2umfe5izyw42u9tkjgoq0&st=y0rjt4w4&dl=1"), // ✅ Use fallbackUrl here
-    ),
-    iosParameters: IOSParameters(
-      bundleId: "com.yourapp.bundle",
-      minimumVersion: "1.0.0",
-    ),
-    navigationInfoParameters: NavigationInfoParameters(
-      forcedRedirectEnabled: true, // Forces redirection if the app is not installed
-    ),
-    socialMetaTagParameters: SocialMetaTagParameters(
-      title: "Join My Stokvel!",
-      description: "Download the app to join our stokvel community.",
-      imageUrl: Uri.parse("https://www.dropbox.com/scl/fi/gxowqk6bbl2lpavtnc2xo/logo_no_text.png?rlkey=hdndljrt4h57sl18ppsaji64j&st=omff8zi3&raw=1"),
-    ),
-  );
+  Future<String> createDynamicLink(String stokvelId) async {
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix: "https://otelainvestmentclubapp.page.link",
+      link: Uri.parse(
+          "https://otelainvestmentclubapp.com/invite?stokvelId=$stokvelId"),
+      androidParameters: AndroidParameters(
+        packageName: "com.example.otela_investment_club_app",
+        minimumVersion: 1,
+        fallbackUrl: Uri.parse(
+            "https://www.dropbox.com/scl/fi/wmkpc2lt2fi5tc6bdazka/app-debug.apk?rlkey=vf5r2umfe5izyw42u9tkjgoq0&st=y0rjt4w4&dl=1"), // ✅ Use fallbackUrl here
+      ),
+      iosParameters: IOSParameters(
+        bundleId: "com.yourapp.bundle",
+        minimumVersion: "1.0.0",
+      ),
+      navigationInfoParameters: NavigationInfoParameters(
+        forcedRedirectEnabled:
+            true, // Forces redirection if the app is not installed
+      ),
+      socialMetaTagParameters: SocialMetaTagParameters(
+        title: "Join My Stokvel!",
+        description: "Download the app to join our stokvel community.",
+        imageUrl: Uri.parse(
+            "https://www.dropbox.com/scl/fi/gxowqk6bbl2lpavtnc2xo/logo_no_text.png?rlkey=hdndljrt4h57sl18ppsaji64j&st=omff8zi3&raw=1"),
+      ),
+    );
 
-  final ShortDynamicLink shortLink = await FirebaseDynamicLinks.instance.buildShortLink(parameters);
-  return shortLink.shortUrl.toString();
-}
-
-
+    final ShortDynamicLink shortLink =
+        await FirebaseDynamicLinks.instance.buildShortLink(parameters);
+    return shortLink.shortUrl.toString();
+  }
 
   /// Pick Contact
   void pickContact() async {
@@ -121,50 +156,60 @@ Future<String> createDynamicLink(String stokvelId) async {
   }
 
   /// Send Invite via WhatsApp and Update Firestore
-Future<void> sendInvite(Contact contact) async {
-  if (contact.phones.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("This contact has no phone number.")),
-    );
-    return;
+  Future<void> sendInvite(Contact contact) async {
+    if (contact.phones.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("This contact has no phone number.")),
+      );
+      return;
+    }
+
+    // Extract and format phone number
+    var phone = '';
+    String rawPhone = contact.phones.first.number
+        .replaceAll(RegExp(r'\D'), ''); // Remove non-digits
+
+    if (rawPhone.startsWith("0")) {
+      // Replace 0 with +256
+      phone = "+256${rawPhone.substring(1)}";
+    } else if (rawPhone.startsWith("256")) {
+      phone = "+$rawPhone";
+    } else if (rawPhone.startsWith("+")) {
+      phone = rawPhone; // Already formatted correctly
+    } else {
+      // Fallback if it’s a weird format: assume it needs +256
+      phone = "+256$rawPhone";
+    }
+
+    final DatabaseReference membersRef = FirebaseDatabase.instance
+        .ref()
+        .child('stokvels')
+        .child(widget.stokvelId)
+        .child('members'); // Using phone as the unique key
+
+    await membersRef.set({
+      'phone': phone,
+      'firstName': contact.displayName, // Null check fallback
+      'status': 'invited',
+      'roboAdvisor': false,
+      'role': 'member',
+      'amountPaid': 0,
+      'invitedAt': ServerValue.timestamp, // Firebase Realtime DB timestamp
+    });
+
+    // Generate WhatsApp message
+    String message = Uri.encodeComponent(_messageController.text);
+    final Uri whatsappUrl = Uri.parse("https://wa.me/$phone?text=$message");
+
+    // Send WhatsApp message
+    if (await canLaunchUrl(whatsappUrl)) {
+      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Couldn't open WhatsApp")),
+      );
+    }
   }
-
-  // Extract and format phone number
-  String phone = contact.phones.first.number.replaceAll(RegExp(r'\D'), '');
-  if (!phone.startsWith("+")) {
-    phone = "+$phone"; // Ensure correct country code
-  }
-
-  // Create a Firestore reference to the `members` subcollection
-  final CollectionReference membersRef = FirebaseFirestore.instance
-      .collection('stokvels')
-      .doc(widget.stokvelId)
-      .collection('members');
-
-  // Add invited member to Firestore
-  await membersRef.doc(phone).set({
-    'phone': phone,
-    'firstName': contact.displayName, // Store contact's name
-    'status': 'invited',
-    'roboAdvisor': false, // Default value
-    'amountPaid': 0, // Default value
-    'invitedAt': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
-
-  // Generate WhatsApp message
-  String message = Uri.encodeComponent(_messageController.text);
-  final Uri whatsappUrl = Uri.parse("https://wa.me/$phone?text=$message");
-
-  // Send WhatsApp message
-  if (await canLaunchUrl(whatsappUrl)) {
-    await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Couldn't open WhatsApp")),
-    );
-  }
-}
-
 
   @override
   Widget build(BuildContext context) {
