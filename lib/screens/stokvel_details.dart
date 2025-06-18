@@ -87,8 +87,11 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
               final stokvelId = latestEntry.key;
               final stokvel = Map<String, dynamic>.from(latestEntry.value);
 
-              return SafeArea(
-                child: SingleChildScrollView(
+              return
+               SafeArea(
+                 child: LayoutBuilder(
+               builder: (context, constraints) {
+                return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: FutureBuilder<String>(
                     future: _getAdminName(stokvel['createdBy']),
@@ -116,12 +119,15 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
                       );
                     },
                   ),
-                ),
+                );
+                },
+                 ),
               );
             },
           );
         },
       ),
+      
     );
   }
 
@@ -135,16 +141,12 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
           child: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children:  [
                 Text("Stokvel",
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontFamily: 'poppins')),
+                    style: Theme.of(context).textTheme.displayLarge),
                 SizedBox(height: 5),
                 Text("Finish setting up your stokvel",
-                    style: TextStyle(fontSize: 14, color: Colors.white)),
+                    style: Theme.of(context).textTheme.titleLarge),
               ],
             ),
           ),
@@ -158,6 +160,7 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
           initialValue: value,
           decoration: InputDecoration(
             labelText: label,
+            hintStyle: Theme.of(context).textTheme.labelSmall,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
             filled: true,
             fillColor: Colors.white,
@@ -188,8 +191,10 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
             child: TextFormField(
               controller: phoneController,
               keyboardType: TextInputType.phone,
+              style: Theme.of(context).textTheme.labelSmall,
               decoration: InputDecoration(
                 labelText: "Phone Number",
+                hintStyle: Theme.of(context).textTheme.labelSmall,
                 border:
                     OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
                 filled: true,
@@ -221,10 +226,10 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
                 final name = "${m['firstName']} ${m['lastName']}";
                 return ListTile(
                   title:
-                      Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(m['phone'] ?? ''),
+                      Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+                  subtitle: Text(m['phone'] ?? '', style: TextStyle(fontSize: 10),),
                   trailing: Text(m['status'] ?? 'Pending',
-                      style: const TextStyle(color: AppColors.darBlue)),
+                      style: const TextStyle(color: AppColors.darBlue, fontSize: 10)),
                 );
               }).toList(),
             ),
@@ -235,7 +240,7 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
   Widget _sectionTitle(String t) => Center(
         child: Text(t,
             style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darBlue)),
+                fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darBlue)),
       );
 
   Widget _saveButton() => Center(
@@ -253,8 +258,8 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
           ),
-          child: const Text("Save & Continue",
-              style: TextStyle(fontSize: 16, color: Colors.white)),
+          child:  Text("Save & Continue",
+              style: Theme.of(context).textTheme.bodyMedium),
         ),
       );
 }

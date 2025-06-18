@@ -67,10 +67,7 @@ Widget build(BuildContext context) {
                     // Pushes content down
                      Text(
               'Congratulations!',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.darBlue,
-              )
+              style: Theme.of(context).textTheme.titleMedium
                      ),
                      SizedBox(height: 20),
                     Text(
@@ -84,17 +81,13 @@ Widget build(BuildContext context) {
                     SizedBox(height: 10),
                     Text( "You have successfully created your account!" ,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.darBlue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     SizedBox(height: 20),
                     Text(
                       'Otela welcomes you to your home of AI-powered Roboadvisory Investing services.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: AppColors.darBlue, fontSize: 16),
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
                     SizedBox(height: 40),
                     ElevatedButton(
@@ -111,7 +104,7 @@ Widget build(BuildContext context) {
                             EdgeInsets.symmetric(horizontal: 80, vertical: 12),
                       ),
                       child: Text( "Next",
-                        style: TextStyle(color: Colors.white),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ),
                   ],

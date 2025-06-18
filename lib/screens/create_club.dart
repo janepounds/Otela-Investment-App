@@ -50,88 +50,87 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     });
   }
 
+  Future<void> _createStokvel() async {
+    if (!_formKey.currentState!.validate() || !_isChecked) {
+      if (!_isChecked) {
+        Fluttertoast.showToast(
+          msg: 'You must agree to the Terms and Conditions',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
+      }
+      return;
+    }
 
+    setState(() {
+      _isLoading = true;
+    });
 
- Future<void> _createStokvel() async {
-  if (!_formKey.currentState!.validate() || !_isChecked) {
-    if (!_isChecked) {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null)
+        throw FirebaseAuthException(message: "User not found", code: "401");
+
+      final userId = user.uid;
+      final DatabaseReference db = FirebaseDatabase.instance.ref();
+
+      // Fetch user details
+      final userSnapshot = await db.child('users/$userId').get();
+      if (!userSnapshot.exists) throw Exception("User record not found.");
+
+      final userData = Map<String, dynamic>.from(userSnapshot.value as Map);
+
+      // Create a new stokvel and push it to database
+      final stokvelRef = db.child('stokvels').push();
+      final stokvelId = stokvelRef.key;
+
+      await stokvelRef.set({
+        'stokvelName': _stokvelNameController.text.trim(),
+        'stokvelNumber': _stokvelNumberController.text.trim(),
+        'stokvelPurpose': selectedPurpose,
+        'createdBy': userId,
+        'createdAt': DateTime.now().toIso8601String(),
+      });
+
+      // Add current user as admin/member under the stokvel
+      await db.child('stokvels/$stokvelId/members/$userId').set({
+        'role': 'admin',
+        'firstName': userData['firstName'],
+        'lastName': userData['lastName'],
+        'phone': userData['phone'],
+        'roboAdvisor': false,
+        'amountPaid': 0,
+        'status': 'Pending',
+        'joinedAt': DateTime.now().toIso8601String(),
+      });
+
       Fluttertoast.showToast(
-        msg: 'You must agree to the Terms and Conditions',
+        msg: 'Stokvel Created Successfully',
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('stokvelName', _stokvelNameController.text.trim());
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => StokvelCongratulationsScreen(),
+        ),
+      );
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: e.toString(),
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-    return;
   }
-
-  setState(() {
-    _isLoading = true;
-  });
-
-  try {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) throw FirebaseAuthException(message: "User not found", code: "401");
-
-    final userId = user.uid;
-    final DatabaseReference db = FirebaseDatabase.instance.ref();
-
-    // Fetch user details
-    final userSnapshot = await db.child('users/$userId').get();
-    if (!userSnapshot.exists) throw Exception("User record not found.");
-
-    final userData = Map<String, dynamic>.from(userSnapshot.value as Map);
-
-    // Create a new stokvel and push it to database
-    final stokvelRef = db.child('stokvels').push();
-    final stokvelId = stokvelRef.key;
-
-    await stokvelRef.set({
-      'stokvelName': _stokvelNameController.text.trim(),
-      'stokvelNumber': _stokvelNumberController.text.trim(),
-      'stokvelPurpose': selectedPurpose,
-      'createdBy': userId,
-      'createdAt': DateTime.now().toIso8601String(),
-    });
-
-    // Add current user as admin/member under the stokvel
-    await db.child('stokvels/$stokvelId/members/$userId').set({
-      'role': 'admin',
-      'firstName': userData['firstName'],
-      'lastName': userData['lastName'],
-      'phone': userData['phone'],
-      'roboAdvisor': false,
-      'amountPaid': 0,
-      'status': 'Pending',
-      'joinedAt': DateTime.now().toIso8601String(),
-    });
-
-    Fluttertoast.showToast(
-      msg: 'Stokvel Created Successfully',
-      backgroundColor: Colors.green,
-      textColor: Colors.white,
-    );
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('stokvelName', _stokvelNameController.text.trim());
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StokvelCongratulationsScreen(),
-      ),
-    );
-  } catch (e) {
-    Fluttertoast.showToast(
-      msg: e.toString(),
-      backgroundColor: Colors.red,
-      textColor: Colors.white,
-    );
-  } finally {
-    setState(() {
-      _isLoading = false;
-    });
-  }
-}
 
   void sendOTP() async {
     await _auth.verifyPhoneNumber(
@@ -153,8 +152,7 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                VerificationScreen(verificationId),
+            builder: (context) => VerificationScreen(verificationId),
           ),
         );
       },
@@ -162,242 +160,233 @@ class _CreateStokvelScreenState extends State<CreateStokvelScreen> {
     );
   }
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: AppColors.beige,
-    resizeToAvoidBottomInset: true, // Handle keyboard overlapping
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      title: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text("Create Stokvel",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'poppins')),
-            SizedBox(height: 4),
-            Text("Enter your details",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontFamily: 'poppins')),
-          ],
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.beige,
+      resizeToAvoidBottomInset: true, // Handle keyboard overlapping
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Create Stokvel",
+                  style: Theme.of(context).textTheme.displayLarge),
+              SizedBox(height: 4),
+              Text("Enter your details",
+                  style: Theme.of(context).textTheme.titleLarge),
+            ],
+          ),
         ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16.0),
+            child: Icon(Icons.menu, color: Colors.white, size: 30),
+          ),
+        ],
       ),
-      actions: const [
-        Padding(
-          padding: EdgeInsets.only(right: 16.0),
-          child: Icon(Icons.menu, color: Colors.white, size: 30),
-        ),
-      ],
-    ),
-    body: Stack(
-      children: [
-        Column(
-          children: [
-            const SizedBox(height: 20),
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius:
-                      BorderRadius.only(topRight: Radius.circular(30)),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildTextField(
-                          labelText: 'Stokvel Name',
-                          controller: _stokvelNameController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter Stokvel name.';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        _buildTextField(
-                          labelText: 'Stokvel Number if Registered',
-                          controller: _stokvelNumberController,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter Stokvel number.';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        buildDropdownField(
-                          "Purpose of Stokvel",
-                          selectedPurpose,
-                          purposes,
-                          (value) {
-                            setState(() {
-                              selectedPurpose = value;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 32),
-                        Text(
-                          'Read T’s and C’s',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: AppColors.beige,
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              const SizedBox(height: 20),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius:
+                        BorderRadius.only(topRight: Radius.circular(30)),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: SingleChildScrollView(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildTextField(
+                            labelText: 'Stokvel Name',
+                            controller: _stokvelNameController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter Stokvel name.';
+                              }
+                              return null;
+                            },
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Checkbox(
-                              value: _isChecked,
-                              onChanged: (value) {
-                                setState(() {
-                                  _isChecked = value!;
-                                });
-                              },
-                              checkColor: Colors.white,
-                              activeColor: AppColors.darBlue,
-                              side: const BorderSide(
-                                  color: AppColors.darBlue, width: 2),
+                          const SizedBox(height: 16),
+                          _buildTextField(
+                            labelText: 'Stokvel Number if Registered',
+                            controller: _stokvelNumberController,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter Stokvel number.';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          buildDropdownField(
+                            "Purpose of Stokvel",
+                            selectedPurpose,
+                            purposes,
+                            (value) {
+                              setState(() {
+                                selectedPurpose = value;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 32),
+                          Text(
+                            'Read T’s and C’s',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.beige,
                             ),
-                            Expanded(
-                              child: RichText(
-                                text: const TextSpan(
-                                  text: 'I agree to the  ',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.darBlue),
-                                  children: [
-                                    TextSpan(
-                                      text: 'Terms & Conditions.',
-                                      style: TextStyle(
-                                          decoration: TextDecoration.underline,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Checkbox(
+                                  value: _isChecked,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _isChecked = value!;
+                                    });
+                                  },
+                                  checkColor:
+                                      Colors.white, // Color of the checkmark
+                                  activeColor: AppColors
+                                      .darBlue, // Background color when checked
+                                  side: const BorderSide(
+                                    color: AppColors.darBlue, // Border color
+                                    width: 2, // Border width
+                                  )),
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: 'I agree to the  ',
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
+                                    children: [
+                                      TextSpan(
+                                        text: 'Terms & Conditions.',
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _isLoading ? null : _createStokvel,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.beige,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 70, vertical: 12),
+                            ],
                           ),
-                          child: const Text(
-                            'Create Stokvel',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16),
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: _isLoading ? null : _createStokvel,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.beige,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 70, vertical: 12),
+                            ),
+                            child: Text('Create Stokvel',
+                                style: Theme.of(context).textTheme.bodyMedium),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
+                          const SizedBox(height: 24),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // Footer
-            Container(
-              color: Colors.white,
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF4F4F4),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40),
-                    topRight: Radius.circular(40),
+              // Footer
+              Container(
+                color: Colors.white,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF4F4F4),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(40),
+                      topRight: Radius.circular(40),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      const Text(
+                        '©Otela',
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF113293),
+                            fontWeight: FontWeight.bold),
+                      ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              // Navigate to Privacy
+                            },
+                            child: const Text(
+                              'Privacy',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF113293)),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          GestureDetector(
+                            onTap: () {
+                              // Navigate to Legal
+                            },
+                            child: const Text(
+                              'Legal',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF113293)),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          GestureDetector(
+                            onTap: () {
+                              // Navigate to Contact
+                            },
+                            child: const Text(
+                              'Contact',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF113293)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    const Text(
-                      '©Otela',
-                      style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF113293),
-                          fontWeight: FontWeight.bold),
-                    ),
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            // Navigate to Privacy
-                          },
-                          child: const Text(
-                            'Privacy',
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF113293)),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        GestureDetector(
-                          onTap: () {
-                            // Navigate to Legal
-                          },
-                          child: const Text(
-                            'Legal',
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF113293)),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        GestureDetector(
-                          onTap: () {
-                            // Navigate to Contact
-                          },
-                          child: const Text(
-                            'Contact',
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF113293)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
 
-        // Loader
-        if (_isLoading) const LoadingOverLay(),
-      ],
-    ),
-  );
-}
-
+          // Loader
+          if (_isLoading) const LoadingOverLay(),
+        ],
+      ),
+    );
+  }
 
   Widget _buildTextField({
     required String labelText,
@@ -411,9 +400,10 @@ Widget build(BuildContext context) {
       obscureText: obscureText,
       keyboardType: keyboardType,
       validator: validator,
+      style: Theme.of(context).textTheme.labelLarge,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.grey),
+        labelStyle: Theme.of(context).textTheme.labelSmall,
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(color: AppColors.gray)),
@@ -437,7 +427,7 @@ Widget build(BuildContext context) {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: selectedValue,
-              hint: Text(title, style: const TextStyle(color: Colors.grey)),
+              hint: Text(title, style: Theme.of(context).textTheme.labelSmall),
               isExpanded: true,
               items: items.map((String item) {
                 return DropdownMenuItem(
@@ -446,6 +436,7 @@ Widget build(BuildContext context) {
                 );
               }).toList(),
               onChanged: onChanged,
+              style: Theme.of(context).textTheme.labelSmall,
             ),
           ),
         ),

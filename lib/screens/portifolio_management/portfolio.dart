@@ -1,9 +1,63 @@
-import 'package:fl_chart/fl_chart.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class PortfolioScreen extends StatelessWidget {
+class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
+  
+
+   @override
+  // ignore: library_private_types_in_public_api
+  _PortfolioScreenState createState() => _PortfolioScreenState();
+}
+
+class _PortfolioScreenState extends State<PortfolioScreen> {
+  
+
+  Future<void> _launchUrl() async {
+  final Uri _url = Uri.parse('https://satrix.co.za/products');
+  if (!await launchUrl(_url)) {
+    throw Exception('Could not launch $_url');
+  }
+}
+
+String? stokvelName;
+
+@override
+void initState() {
+  super.initState();
+  _fetchStokvelName().then((name) {
+    setState(() {
+      stokvelName = name;
+    });
+  });
+}
+
+
+Future<String?> _fetchStokvelName() async {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user == null) return null;
+
+  final snapshot = await FirebaseDatabase.instance.ref('stokvels').get();
+
+  if (snapshot.exists) {
+    final stokvels = snapshot.value as Map<dynamic, dynamic>;
+
+    final entry = stokvels.entries.firstWhere(
+      (e) => e.value is Map && e.value['createdBy'] == user.uid,
+    
+    );
+
+    final stokvelData = entry.value as Map;
+    return stokvelData['stokvelName'];
+    }
+
+  return null;
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -11,16 +65,11 @@ class PortfolioScreen extends StatelessWidget {
       backgroundColor: AppColors.darBlue,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Padding(
+        title:  Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Text(
             "Portfolio",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'poppins',
-            ),
+            style: Theme.of(context).textTheme.displayLarge,
           ),
         ),
         actions: const [
@@ -60,14 +109,14 @@ class PortfolioScreen extends StatelessWidget {
                     const Text(
                       "Investment Summary",
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: AppColors.darBlue),
                     ),
                     const SizedBox(height: 20),
-                    _buildPortfolioRow("Total Investments", "R 50,000"),
-                    _buildPortfolioRow("Growth", "+12.5%"),
-                    _buildPortfolioRow("Risk Level", "Medium"),
+                    _buildPortfolioRow("Investment Number", "MDKCDCK"),
+                    _buildPortfolioRow("Investment Club", stokvelName ?? " N/A"),
+                    _buildPortfolioRow("Current Portfolio value", "ZAR 5000"),
                   ],
                 ),
               ),
@@ -75,9 +124,7 @@ class PortfolioScreen extends StatelessWidget {
               const SizedBox(height: 20),
               Center(
                   child: ElevatedButton(
-                onPressed: () {
-                  // Handle save action
-                },
+                onPressed: _launchUrl,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.beige, // Gold color
                   shape: RoundedRectangleBorder(
@@ -85,16 +132,17 @@ class PortfolioScreen extends StatelessWidget {
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                 ),
+                
                 child: Text(
                   "More Stats",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               )),
               const SizedBox(height: 20),
               // Portfolio Make-up
               const Center( child:  Text(
                 "Portfolio Make-up",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darBlue),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darBlue),
               )
               ),
                Container(
@@ -105,19 +153,55 @@ class PortfolioScreen extends StatelessWidget {
               const SizedBox(height: 20),
 
               // Pie Chart
-              SizedBox(
-                height: 200,
-                child: PieChart(
-                  PieChartData(
-                    sections: [
-                      _buildPieChartSection(40, Colors.blue, "Stocks"),
-                      _buildPieChartSection(30, Colors.green, "Bonds"),
-                      _buildPieChartSection(20, Colors.orange, "Crypto"),
-                      _buildPieChartSection(10, Colors.red, "Cash"),
-                    ],
-                  ),
-                ),
-              ),
+      Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16),
+  child: Card(
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    elevation: 3,
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+
+      // Title
+      title: const Text(
+        "Investment ID",
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.darBlue
+        ),
+      ),
+
+      // Subtitle
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          SizedBox(height: 4),
+          Text(
+            "Current Value",
+            style: TextStyle(fontSize: 12, color: Colors.black54),
+          ),
+          Text(
+            "Profits / Losses Value",
+            style: TextStyle(fontSize: 12, color: Colors.black54),
+          ),
+        ],
+      ),
+
+      // Trailing
+      trailing: const Text(
+        "Updated: ",
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+  ),
+)
+
             ],
           ),
         ),
@@ -132,26 +216,14 @@ class PortfolioScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title,
-              style: const TextStyle(fontSize: 16, color: AppColors.darBlue)),
+              style: const TextStyle(fontSize: 12, color: AppColors.darBlue)),
           Text(value,
               style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.darBlue)),
+                  color: AppColors.beige)),
         ],
       ),
-    );
-  }
-
-  PieChartSectionData _buildPieChartSection(
-      double percentage, Color color, String title) {
-    return PieChartSectionData(
-      value: percentage,
-      color: color,
-      title: title,
-      radius: 50,
-      titleStyle: const TextStyle(
-          fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/bank_details_screen.dart';
 import 'package:otela_investment_club_app/screens/create_account.dart';
 import 'package:otela_investment_club_app/screens/create_club.dart';
@@ -43,6 +44,14 @@ class MyApp extends StatelessWidget {
       title: 'Otela App',
       theme: ThemeData(
         fontFamily: 'Poppins',
+         textTheme: const TextTheme(
+          displayLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'poppins', color: Colors.white),
+          titleLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,fontFamily: 'poppins', color: Colors.white),
+          titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.darBlue),
+          bodyMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'poppins', color: Colors.white),
+          labelLarge: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, fontFamily: 'poppins', color: Colors.grey),
+          labelSmall: TextStyle(fontSize: 10,  fontWeight: FontWeight.w500, fontFamily: 'poppins', color: Colors.grey),
+        )
       ),
       home: SplashScreen(),
       routes: {

@@ -133,8 +133,8 @@ Widget build(BuildContext context) {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 50, vertical: 14),
                         ),
-                        child: const Text('Join Existing Stokvel',
-                            style: TextStyle(color: Colors.white)),
+                        child:  Text('Join Existing Stokvel',
+                            style: Theme.of(context).textTheme.bodyMedium),
                       ),
                       const SizedBox(height: 15),
                       ElevatedButton(
@@ -146,8 +146,8 @@ Widget build(BuildContext context) {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 50, vertical: 14),
                         ),
-                        child: const Text('Create A New Stokvel',
-                            style: TextStyle(color: Colors.white)),
+                        child:  Text('Create A New Stokvel',
+                            style: Theme.of(context).textTheme.bodyMedium),
                       ),
                     ],
                   ),

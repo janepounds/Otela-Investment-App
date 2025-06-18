@@ -152,19 +152,13 @@ Future<void> _signUp() async {
             padding: const EdgeInsets.only(left: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children:  [
                 Text("Create Account",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'poppins')),
+                    style: Theme.of(context).textTheme.displayLarge,
+                ),
                 SizedBox(height: 4),
                 Text("Enter your details",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontFamily: 'poppins')),
+                     style: Theme.of(context).textTheme.titleLarge,)
               ],
             ),
           ),
@@ -257,8 +251,7 @@ Future<void> _signUp() async {
                                               (code) => DropdownMenuItem(
                                                 value: code,
                                                 child: Text(code,
-                                                    style: const TextStyle(
-                                                        fontSize: 16)),
+                                                    style: Theme.of(context).textTheme.bodySmall),
                                               ),
                                             )
                                             .toList(),
@@ -335,15 +328,14 @@ Future<void> _signUp() async {
                                   Align(
                                     alignment: Alignment.bottomCenter,
                                     child: RichText(
-                                      text: const TextSpan(
+                                      text:  TextSpan(
                                         text: 'I agree to the  ',
-                                        style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.darBlue),
+                                        style: Theme.of(context).textTheme.titleMedium,
                                         children: [
                                           TextSpan(
                                             text: 'Terms & Conditions.',
                                             style: TextStyle(
+                                              fontSize: 14,
                                                 decoration:
                                                     TextDecoration.underline,
                                                 fontWeight: FontWeight.bold),
@@ -370,13 +362,9 @@ Future<void> _signUp() async {
                                           vertical: 12,
                                         ),
                                       ),
-                                      child: const Text(
+                                      child:  Text(
                                         'Sign Up',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
+                                        style: Theme.of(context).textTheme.bodyMedium,
                                       ),
                                     ),
                               const SizedBox(height: 24),
@@ -511,9 +499,11 @@ Future<void> _signUp() async {
       obscureText: obscureText,
       keyboardType: keyboardType,
       validator: validator,
+      style: Theme.of(context).textTheme.labelLarge,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.grey),
+        labelStyle: Theme.of(context).textTheme.labelSmall,
+        
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(color: AppColors.gray)),

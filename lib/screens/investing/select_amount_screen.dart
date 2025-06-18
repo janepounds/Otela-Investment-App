@@ -21,15 +21,11 @@ class _SelectAmountScreenState extends State<SelectAmountScreen> {
       backgroundColor: AppColors.darBlue,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Padding(
+        title:  Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Text(
             "Select Amount",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontFamily: 'poppins',
-            ),
+            style: Theme.of(context).textTheme.displayLarge,
           ),
         ),
         actions: const [
@@ -38,7 +34,7 @@ class _SelectAmountScreenState extends State<SelectAmountScreen> {
             child: Icon(
               Icons.close,
               color: Colors.white,
-              size: 30,
+              size: 20,
             ),
           ),
         ],
@@ -60,7 +56,7 @@ class _SelectAmountScreenState extends State<SelectAmountScreen> {
                   child: Text(
                 'Start your Investment Journey!',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.darBlue,
                 ),
@@ -70,7 +66,7 @@ class _SelectAmountScreenState extends State<SelectAmountScreen> {
                   child: Text(
                 'How much do you want\n to invest?',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: AppColors.darBlue),
+                style: Theme.of(context).textTheme.titleMedium,
               )),
               const SizedBox(height: 20),
               Row(
@@ -90,7 +86,7 @@ class _SelectAmountScreenState extends State<SelectAmountScreen> {
                               (code) => DropdownMenuItem(
                                 value: code,
                                 child: Text(code,
-                                    style: const TextStyle(fontSize: 16)),
+                                    style: Theme.of(context).textTheme.bodySmall),
                               ),
                             )
                             .toList(),
@@ -138,7 +134,7 @@ class _SelectAmountScreenState extends State<SelectAmountScreen> {
                 ),
                 child: Text(
                   "Next",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               )),
               const SizedBox(height: 20),
@@ -161,9 +157,10 @@ class _SelectAmountScreenState extends State<SelectAmountScreen> {
       obscureText: obscureText,
       keyboardType: keyboardType,
       validator: validator,
+      style: Theme.of(context).textTheme.bodySmall,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.grey),
+        labelStyle:Theme.of(context).textTheme.bodySmall,
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(color: AppColors.gray)),

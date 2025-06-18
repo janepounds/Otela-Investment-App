@@ -28,21 +28,15 @@ class _MembersListScreenState extends State<MembersListScreen> {
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children:  [
             Text(
               "Members",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-              ),
+              style: Theme.of(context).textTheme.displayLarge,
             ),
             SizedBox(height: 4),
             Text(
               "Stokvel Members Details",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
+              style: Theme.of(context).textTheme.titleLarge,
             ),
           ],
         ),
@@ -74,6 +68,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
                   prefixIcon: const Icon(Icons.search, color: Colors.grey),
                   filled: true,
                   fillColor: Colors.white,
+                  hintStyle: Theme.of(context).textTheme.labelMedium,
                   border: OutlineInputBorder(
                     borderRadius:
                         BorderRadius.circular(25), // Fully rounded corners
@@ -149,7 +144,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
                             title: Text(
                               firstName,
                               style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w600),
+                                  fontSize: 12, fontWeight: FontWeight.w600),
                             ),
 
                             // Display Additional Info Below Name
@@ -162,14 +157,14 @@ class _MembersListScreenState extends State<MembersListScreen> {
                                 Text(
                                   "Robo Advisor: ${(member['roboAdvisor'] ?? false) ? 'Yes' : 'No'}",
                                   style: const TextStyle(
-                                      fontSize: 14, color: Colors.black54),
+                                      fontSize: 12, color: Colors.black54),
                                 ),
 
                                 // Amount Paid
                                 Text(
                                   "Amount Paid: \$${(member['amountPaid'] ?? 0).toStringAsFixed(2)}",
                                   style: const TextStyle(
-                                      fontSize: 14, color: Colors.black54),
+                                      fontSize: 12, color: Colors.black54),
                                 ),
                               ],
                             ),
@@ -200,7 +195,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
                                   Text(
                                     status == "invited" ? "Invited" : "Joined",
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w500,
                                       color: status == "invited"
                                           ? Colors.orange
@@ -225,7 +220,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
         width: 160, // Adjust width for rounded button
         height: 50,
         decoration: BoxDecoration(
-          color: const Color(0xFFDAB669),
+          color: AppColors.beige,
           borderRadius: BorderRadius.circular(25), // Rounded at both ends
         ),
         child: FloatingActionButton.extended(
@@ -238,12 +233,12 @@ class _MembersListScreenState extends State<MembersListScreen> {
             );
           },
           backgroundColor: Colors.transparent,
-          elevation: 1,
-          label: const Row(
+        
+          label:  Row(
             children: [
               Icon(Icons.add, color: Colors.white), // Plus icon at the start
               SizedBox(width: 5),
-              Text("Invite", style: TextStyle(color: Colors.white)),
+              Text("Invite", style: Theme.of(context).textTheme.bodyMedium),
             ],
           ),
         ),

@@ -19,16 +19,11 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
       backgroundColor: AppColors.darBlue,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Padding(
+        title:  Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Text(
             "Bank Transfer",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'poppins',
-            ),
+            style: Theme.of(context).textTheme.displayLarge,
           ),
         ),
         actions: const [
@@ -54,16 +49,16 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     const Center(
                         child: Text(
                       "Pay with Bank Transfer",
                       style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: AppColors.darBlue),
                     )),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 20),
                     // Summary Card (Removed Expanded)
 
                     // 🔹 Account Details Card
@@ -129,7 +124,7 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
                         const Text(
                           "I have transferred the money.",
                           style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: AppColors.darBlue),
                         ),
@@ -176,7 +171,7 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
     return Text(
       text,
       style: const TextStyle(
-          fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darBlue),
+          fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darBlue),
     );
   }
 
@@ -184,7 +179,7 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
   Widget _buildDetailText(String text) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 14, color: AppColors.darBlue),
+      style: const TextStyle(fontSize: 12, color: AppColors.darBlue),
     );
   }
 
@@ -194,7 +189,7 @@ class _BankTransferScreenState extends State<BankTransferScreen> {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 14, color: AppColors.darBlue),
+        style: const TextStyle(fontSize: 12, color: AppColors.darBlue),
       ),
     );
   }

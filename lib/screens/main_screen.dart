@@ -17,57 +17,51 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final List<Map<String, String>> featuredInvestments = [
-    {
-      "title": "Satrix \nS&P 500",
-      "subtitle":
-          "The Satrix \nS&P 500 Feeder ETF is an index tracking fund registered as a Collective Investment Scheme",
-      "image": "assets/images/money_tree_bg.png"
-    },
-    {
-      "title": "Satrix \nS&P 500",
-      "subtitle":
-          "The Satrix \nS&P 500 Feeder ETF is an index tracking fund registered as a Collective Investment Scheme",
-      "image": "assets/images/money_tree_bg.png"
-    },
-    {
-      "title": "Satrix \nS&P 500",
-      "subtitle":
-          "The Satrix \nS&P 500 Feeder ETF is an index tracking fund registered as a Collective Investment Scheme",
-      "image": "assets/images/money_tree_bg.png"
-    },
-  ];
-
-  final List<Map<String, String>> recommendedInvestments = [
-    {
-      "title": "Satrix \nS&P 500",
-      "subtitle":
-          "The Satrix \nS&P 500 Feeder ETF is an index tracking fund registered as a Collective Investment Scheme",
-      "image": "assets/images/money_tree_bg.png"
-    },
-    {
-      "title": "Satrix \nS&P 500",
-      "subtitle":
-          "The Satrix \nS&P 500 Feeder ETF is an index tracking fund registered as a Collective Investment Scheme",
-      "image": "assets/images/money_tree_bg.png"
-    },
-    {
-      "title": "Satrix \nS&P 500",
-      "subtitle":
-          "The Satrix \nS&P 500 Feeder ETF is an index tracking fund registered as a Collective Investment Scheme",
-      "image": "assets/images/money_tree_bg.png"
-    },
-  ];
-
-  final List<Map<String, String>> tailoredInvestments = [
-    {
-      "title": "Lifestyle",
-      "image": "assets/images/fund_bg_final.png",
-      "subtitle": ""
-    },
-  ];
+  late DatabaseReference groupsRef;
+  List<Map<String, dynamic>> etfGroups = [];
+  List<Map<String, dynamic>> unitTrustGroups = [];
+  bool isLoading = true;
 
   int _selectedIndex = 0; // Track the selected index
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStokvelId();
+    groupsRef = FirebaseDatabase.instance.ref('products');
+    _fetchGroups();
+  }
+
+  Future<void> _fetchGroups() async {
+    final snapshot = await FirebaseDatabase.instance.ref('products').get();
+
+    if (snapshot.exists) {
+      final productsData = Map<String, dynamic>.from(snapshot.value as Map);
+
+      // Extract ETF products
+      final etfData = Map<String, dynamic>.from(productsData['ETF'] ?? {});
+      final unitTrustData =
+          Map<String, dynamic>.from(productsData['UNIT_TRUST'] ?? {});
+
+      List<Map<String, dynamic>> parseProducts(Map<String, dynamic> dataMap) {
+        return dataMap.entries.map((e) {
+          final product = Map<String, dynamic>.from(e.value);
+          product['id'] = e.key;
+          return product;
+        }).toList();
+      }
+
+      setState(() {
+        etfGroups = parseProducts(etfData);
+        unitTrustGroups = parseProducts(unitTrustData);
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -95,12 +89,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   String? stokvelId;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchStokvelId();
-  }
 
   Future<void> _fetchStokvelId() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -143,8 +131,8 @@ class _MainScreenState extends State<MainScreen> {
               children: [
                 SvgPicture.asset(
                   "assets/icons/logo_beige.svg",
-                  width: 60,
-                  height: 60,
+                  width: 70,
+                  height: 70,
                 ),
                 const Icon(Icons.menu, color: Colors.white),
               ],
@@ -161,160 +149,175 @@ class _MainScreenState extends State<MainScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Search Bar
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  // Members Card
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                        boxShadow: [
-                          BoxShadow(
-                            // ignore: deprecated_member_use
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                            offset: Offset(0, 2),
-                          )
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Title & Icon
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                "Members",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.darBlue),
-                              ),
-                              SvgPicture.asset("assets/icons/members.svg",
-                                  color: AppColors.darBlue),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          // Large Number
-                          StreamBuilder<DatabaseEvent>(
-                            stream: fetchMembersStream(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              }
-
-                              if (!snapshot.hasData ||
-                                  snapshot.data!.snapshot.value == null) {
-                                return const Text("No Members");
-                              }
-
-                              final data = snapshot.data!.snapshot.value
-                                  as Map<dynamic, dynamic>;
-                              final members = data.values.toList();
-
-                              int total = members.length;
-                              int invited = members
-                                  .where((m) => m['status'] == 'invited')
-                                  .length;
-                              int joined = members
-                                  .where((m) => m['status'] == 'joined')
-                                  .length;
-
-                              return Column(
-                                children: [
-                                  Text("$total",
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green)),
-                                  Text("Invited = $invited",
-                                      style:
-                                          TextStyle(color: AppColors.darBlue)),
-                                  Text("Signed Up = $joined",
-                                      style:
-                                          TextStyle(color: AppColors.darBlue)),
-                                ],
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Contribution Card
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                            offset: Offset(0, 2),
-                          )
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Title & Icon
-
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
+            SizedBox(
+              height: 150,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    // Members Card
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                          boxShadow: [
+                            BoxShadow(
+                              // ignore: deprecated_member_use
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 5,
+                              offset: Offset(0, 2),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title & Icon
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Your row widgets here
                                 Text(
-                                  "Contribution (ZAR)",
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.darBlue),
+                                  "Members",
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium,
                                 ),
-
-                                SvgPicture.asset(
-                                  'assets/icons/contribution.svg',
-                                  color: AppColors.darBlue,
-                                  alignment: Alignment.topRight,
-                                ),
+                                SvgPicture.asset("assets/icons/members.svg",
+                                    color: AppColors.darBlue,
+                                    height: 14,
+                                    width: 14),
                               ],
                             ),
-                          ),
+                            const SizedBox(height: 8),
+                            // Large Number
+                            StreamBuilder<DatabaseEvent>(
+                              stream: fetchMembersStream(),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                }
 
-                          const SizedBox(height: 8),
-                          // Large Number
-                          Text(
-                            "155,000", // Replace with actual data
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.red,
+                                if (!snapshot.hasData ||
+                                    snapshot.data!.snapshot.value == null) {
+                                  return const Text("No Members");
+                                }
+
+                                final data = snapshot.data!.snapshot.value
+                                    as Map<dynamic, dynamic>;
+
+                                final members = data.values
+                                    .whereType<
+                                        Map>() // This filters out any unexpected non-map values
+                                    .toList();
+
+                                int total = members.length;
+                                int invited = members
+                                    .where((m) => m['status'] == 'invited')
+                                    .length;
+                                int joined = members
+                                    .where((m) => m['status'] == 'joined')
+                                    .length;
+
+                                return Column(
+                                  children: [
+                                    Text("$total",
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.green)),
+                                    Text("Invited = $invited",
+                                        style: TextStyle(
+                                            color: AppColors.darBlue,
+                                            fontSize: 10)),
+                                    Text("Signed Up = $joined",
+                                        style: TextStyle(
+                                            color: AppColors.darBlue,
+                                            fontSize: 10)),
+                                  ],
+                                );
+                              },
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          // Smaller Stats
-                          Text("Target = 500,000",
-                              style: TextStyle(
-                                  fontSize: 10, color: AppColors.darBlue)),
-                          Text("Unpaid = 345,000",
-                              style: TextStyle(
-                                  fontSize: 10, color: AppColors.darBlue)),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    // Contribution Card
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 5,
+                              offset: Offset(0, 2),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title & Icon
+
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  // Your row widgets here
+                                  Text(
+                                    "Contribution (ZAR)",
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.darBlue,
+                                        fontFamily: 'poppins'),
+                                  ),
+
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 6.0),
+                                    child: SvgPicture.asset(
+                                      'assets/icons/contribution.svg',
+                                      height: 14,
+                                      width: 14,
+                                      color: AppColors.darBlue,
+                                      alignment: Alignment.topRight,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+                            // Large Number
+                            Text(
+                              "155,000", // Replace with actual data
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.red,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Smaller Stats
+                            Text("Target = 500,000",
+                                style: TextStyle(
+                                    fontSize: 10, color: AppColors.darBlue)),
+                            Text("Unpaid = 345,000",
+                                style: TextStyle(
+                                    fontSize: 10, color: AppColors.darBlue)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             // Details Button
@@ -342,10 +345,7 @@ class _MainScreenState extends State<MainScreen> {
                 child: Center(
                   child: Text(
                     "DETAILS",
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.darBlue),
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
               ),
@@ -353,42 +353,8 @@ class _MainScreenState extends State<MainScreen> {
 
             const SizedBox(height: 16),
 
-            // Recommended Investments
-            buildSectionTitle("Exchange Traded Funds"),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: recommendedInvestments.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 1.3,
-                ),
-                itemBuilder: (context, index) {
-                  return buildInvestmentCard(
-                    recommendedInvestments[index]["title"]!,
-                    recommendedInvestments[index]["subtitle"]!,
-                    recommendedInvestments[index]["image"]!,
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Tailored Investments
-            buildSectionTitle("Unit Trust Funds"),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: buildInvestmentCard(
-                tailoredInvestments.first["title"]!,
-                tailoredInvestments.first["subtitle"]!,
-                tailoredInvestments.first["image"]!,
-              ),
-            ),
+            buildGroupSection("Exchange Traded Funds", etfGroups),
+            buildGroupSection("Unit Trusts", unitTrustGroups),
 
             const SizedBox(height: 20),
           ],
@@ -406,40 +372,40 @@ class _MainScreenState extends State<MainScreen> {
         items: [
           BottomNavigationBarItem(
             icon: SizedBox(
-              width: 24, // Adjust size as needed
-              height: 24,
+              width: 20, // Adjust size as needed
+              height: 20,
               child: SvgPicture.asset("assets/icons/home.svg"),
             ),
             label: "Home",
           ),
           BottomNavigationBarItem(
             icon: SizedBox(
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               child: SvgPicture.asset("assets/icons/investment.svg"),
             ),
             label: "Invest",
           ),
           BottomNavigationBarItem(
             icon: SizedBox(
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               child: SvgPicture.asset("assets/icons/goals.svg"),
             ),
             label: "Goals",
           ),
           BottomNavigationBarItem(
             icon: SizedBox(
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               child: SvgPicture.asset("assets/icons/portfolio.svg"),
             ),
             label: "Portfolio",
           ),
           BottomNavigationBarItem(
             icon: SizedBox(
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               child: SvgPicture.asset("assets/icons/watchlist.svg"),
             ),
             label: "Watchlist",
@@ -471,15 +437,14 @@ class _MainScreenState extends State<MainScreen> {
 
 Widget buildInvestmentCard(String title, String subtitle, String image) {
   return Container(
-    width: double.infinity,
-    height: 160,
+ width: 160,
+ height: 160,
+    margin: const EdgeInsets.only(right: 12),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(16),
       image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
     ),
     child: Container(
-      width: double.infinity,
-      height: 160,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
@@ -489,50 +454,32 @@ Widget buildInvestmentCard(String title, String subtitle, String image) {
         ),
       ),
       child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                title,
+            Text(title,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(subtitle,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                  fontSize: 8,
+                )),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade900,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
-            ),
-            // Subtitle
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            const SizedBox(
-                height: 16), // Add some space between subtitle and button
-            // Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade900,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: _launchUrl,
-                child: const Text(
-                  'Invest',
+              onPressed: _launchUrl,
+              child: const Text('Invest',
                   style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
+                      color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -557,6 +504,49 @@ Widget buildSectionTitle(String title) {
       style: const TextStyle(
           fontSize: 18, color: AppColors.darBlue, fontFamily: 'poppins'),
     ),
+  );
+}
+
+Widget buildGroupSection(String title, List<Map<String, dynamic>> groupList) {
+  const imageAsset = 'assets/images/money_tree_bg.png';
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: 24),
+       Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16), // Add horizontal space
+        child: Text(
+          "$title >",
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: AppColors.darBlue,
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        height: 160,
+        child: groupList.isEmpty
+            ? const Center(child: Text("No products available" ,
+            style: TextStyle(fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: AppColors.darBlue)))
+            : ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: groupList.length,
+                itemBuilder: (context, index) {
+                  final group = groupList[index];
+                  final groupName = group['name'] ?? 'N/A';
+                  final description = group['description'] ?? 'No description';
+                  return buildInvestmentCard(
+                      groupName, description, imageAsset);
+                },
+              ),
+      ),
+    ],
   );
 }
 

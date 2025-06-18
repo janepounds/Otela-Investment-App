@@ -11,16 +11,11 @@ class SuccessScreen extends StatelessWidget {
       backgroundColor: AppColors.darBlue,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Padding(
+        title:  Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Text(
             "Congratulations",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'poppins',
-            ),
+            style: Theme.of(context).textTheme.displayLarge,
           ),
         ),
         actions: [
@@ -56,7 +51,7 @@ class SuccessScreen extends StatelessWidget {
                         child: Text(
                             'Your payment was successful. An email with transaction details has been shared.',
                             style: TextStyle(
-                                fontSize: 20, color: AppColors.darBlue))),
+                                fontSize: 14, color: AppColors.darBlue))),
                     SizedBox(height: 16),
                     SvgPicture.asset("assets/icons/envelope_send.svg",
                         width: 300, height: 300),
@@ -75,7 +70,7 @@ class SuccessScreen extends StatelessWidget {
                       child: Text(
                         "Done",
                         style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 12,
                             color: Colors.white,
                             fontWeight: FontWeight.bold),
                       ),

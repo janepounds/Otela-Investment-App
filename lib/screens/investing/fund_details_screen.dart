@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/investing/select_amount_screen.dart';
 
-class FundDetailsScreen extends StatelessWidget {
+class FundDetailsScreen extends StatefulWidget {
   const FundDetailsScreen({super.key});
+
+   @override
+  // ignore: library_private_types_in_public_api
+  _FundDetailsScreenState createState() => _FundDetailsScreenState();
+}
+
+class _FundDetailsScreenState extends State<FundDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
@@ -11,16 +18,11 @@ class FundDetailsScreen extends StatelessWidget {
       backgroundColor: AppColors.darBlue,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Padding(
+        title:  Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Text(
             "Fund Details",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'poppins',
-            ),
+            style: Theme.of(context).textTheme.displayLarge,
           ),
         ),
         actions: const [
@@ -66,7 +68,7 @@ class FundDetailsScreen extends StatelessWidget {
                 ),
                 child: Text(
                   "Invest",
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               )),
               const SizedBox(height: 20),
@@ -77,3 +79,4 @@ class FundDetailsScreen extends StatelessWidget {
     );
   }
 }
+

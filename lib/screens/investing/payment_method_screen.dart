@@ -20,16 +20,11 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       backgroundColor: AppColors.darBlue,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Padding(
+        title:  Padding(
           padding: EdgeInsets.only(left: 8.0),
           child: Text(
             "Payment Method",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'poppins',
-            ),
+            style: Theme.of(context).textTheme.displayLarge,
           ),
         ),
         actions: const [
@@ -55,16 +50,16 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               const Center(
                   child: Text(
                 "Select a payment method",
                 style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: AppColors.darBlue),
               )),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               // Summary Card (Removed Expanded)
 
               // 🔹 Payment Selection Card
@@ -90,13 +85,13 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                         "Bank Transfer",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 12,
                             color: AppColors.darBlue),
                       ),
                       subtitle: const Text(
                         "+0 Fees.\nTransfer can take up to 2 days processing.",
                         style:
-                            TextStyle(fontSize: 12, color: AppColors.darBlue),
+                            TextStyle(fontSize: 10, color: AppColors.darBlue),
                       ),
                     ),
 
@@ -119,7 +114,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                             "PayPal",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 12,
                                 color: AppColors.darBlue),
                           ),
                         ],
@@ -127,7 +122,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                       subtitle: const Text(
                         "+0 Fees.\nTransfer can take up to 1 day processing.\nOnly Once-off Deposits allowed.",
                         style:
-                            TextStyle(fontSize: 12, color: AppColors.darBlue),
+                            TextStyle(fontSize: 10, color: AppColors.darBlue),
                       ),
                     ),
 
@@ -152,7 +147,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                             ),
                             const Text(
                               "Recurring Deposit",
-                              style: TextStyle(color: AppColors.darBlue),
+                              style: TextStyle(fontSize: 10, color: AppColors.darBlue),
                             ),
                           ],
                         ),
@@ -173,7 +168,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                             ),
                             const Text(
                               "Once-off Deposit",
-                              style: TextStyle(color: AppColors.darBlue),
+                              style: TextStyle(fontSize: 10, color: AppColors.darBlue),
                             ),
                           ],
                         ),
@@ -189,39 +184,39 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
               _buildSummaryRow("Fund Name:", "",
                   style: TextStyle(
                       color: AppColors.darBlue,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600)),
               _buildSummaryRow("How much am I paying now?", "",
                   style: TextStyle(
                       color: AppColors.beige,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600)),
               _buildSummaryRow("Amount Selected:", "",
                   style: TextStyle(
                       color: AppColors.darBlue,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600)),
               _buildSummaryRow("Traction Fees:", "",
                   style: TextStyle(
                       color: AppColors.darBlue,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600)),
               _buildSummaryRow("Pay Now:", "",
                   style: TextStyle(color: AppColors.darBlue)),
               _buildSummaryRow("How much will get invested?", "",
                   style: TextStyle(
                       color: AppColors.beige,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600)),
               _buildSummaryRow("Otela Fees:", "",
                   style: TextStyle(
                       color: AppColors.darBlue,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600)),
               _buildSummaryRow("Total Invested:", "",
                   style: TextStyle(
                       color: AppColors.darBlue,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600)),
 
               const SizedBox(height: 10),
@@ -291,7 +286,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       child: Text(
         text,
         style: const TextStyle(
-            fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+            fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }

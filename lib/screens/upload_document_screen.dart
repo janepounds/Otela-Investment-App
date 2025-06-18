@@ -118,19 +118,12 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
             padding: const EdgeInsets.only(left: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children:  [
                 Text("My Profile",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'poppins')),
+                    style: Theme.of(context).textTheme.displayLarge),
                 SizedBox(height: 4),
                 Text("Finish Setting up your profile",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontFamily: 'poppins')),
+                   style: Theme.of(context).textTheme.titleLarge),
               ],
             ),
           ),
@@ -165,7 +158,7 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
                       const Center(
                           child: Text("TAX PIN Certificate",
                               style: TextStyle(
-                                  fontSize: 22, color: AppColors.darBlue))),
+                                  fontSize: 14, color: AppColors.darBlue))),
                       const SizedBox(height: 15),
                       buildInputField(
                           "Tax number (PIN/TIN/SSN)", taxNumberController),
@@ -180,7 +173,7 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
                       const Center(
                           child: Text("Domicilium",
                               style: TextStyle(
-                                  fontSize: 22, color: AppColors.darBlue))),
+                                  fontSize: 14, color: AppColors.darBlue))),
                       const SizedBox(height: 10),
                       _buildDomiciliumList(),
                       const SizedBox(height: 20),
@@ -200,7 +193,7 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
                         child: const Text(
                           "Back to Stokvel Details",
                           style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 12,
                               color: AppColors.darBlue,
                               fontWeight: FontWeight.bold),
                         ),
@@ -221,6 +214,7 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
+        hintStyle: Theme.of(context).textTheme.titleMedium,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
       ),
     );
@@ -253,13 +247,13 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30))),
               child: const Text("Upload File",
-                  style: TextStyle(color: Colors.white)),
+                  style: TextStyle(color: Colors.white, fontSize: 14),),
             ),
             if (file != null)
               ElevatedButton(
                 onPressed: onUpload,
                 child:
-                    const Text("Upload", style: TextStyle(color: Colors.white)),
+                    const Text("Upload", style: TextStyle(color: Colors.white, fontSize: 14)),
               ),
           ],
         ),
@@ -287,9 +281,9 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
-      child: const Text(
+      child:  Text(
         "Save & Continue",
-        style: TextStyle(color: Colors.white, fontSize: 16),
+        style: Theme.of(context).textTheme.bodyMedium,
       ),
     );
   }
@@ -350,9 +344,9 @@ class ProgressStepper extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(isChecked ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: selectedColor, size: 20),
+              color: selectedColor, size: 10),
           SizedBox(width: 4),
-          Text(title, style: TextStyle(fontSize: 12, color: AppColors.darBlue)),
+          Text(title, style: TextStyle(fontSize: 10, color: AppColors.darBlue)),
           SizedBox(width: 10),
         ],
       ),

@@ -114,6 +114,7 @@ void verifyOTP() async {
                               borderSide: const BorderSide(color: AppColors.gray),
                             ),
                           ),
+                          style: Theme.of(context).textTheme.labelSmall,
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
                         ),
@@ -127,13 +128,9 @@ void verifyOTP() async {
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 12),
                           ),
-                          child: const Text(
+                          child:  Text(
                             'Verify Code',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ),
                       ],

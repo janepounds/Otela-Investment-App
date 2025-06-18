@@ -14,6 +14,8 @@ class _RoboAdvisorScreenState extends State<RoboAdvisorScreen> {
   int currentPage = 0;
   bool isFinished = false;
   int totalScore = 0;
+
+   List<ChatMessage> messages = [];
   Map<int, int> selectedAnswers = {};
 
   final List<RoboQuestion> roboQuestions = [
@@ -187,201 +189,198 @@ class _RoboAdvisorScreenState extends State<RoboAdvisorScreen> {
 
   int currentQuestionIndex = 0;
 
-  void selectAnswer(int score) {
-    selectedAnswers[currentQuestionIndex] = score;
-    totalScore += score;
+  @override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    setState(() {
+      _addBotMessage(
+        roboQuestions[currentQuestionIndex].question,
+        roboQuestions[currentQuestionIndex].options,
+      );
+    });
+  });
+}
 
-    if (currentQuestionIndex + 1 >= roboQuestions.length) {
-      setState(() => isFinished = true);
-    } else {
-      setState(() => currentQuestionIndex++);
-    }
+ void _addBotMessage(String text, [List<RoboOption>? options]) {
+    messages.add(ChatMessage(
+      sender: Sender.bot,
+      text: text,
+      options: options,
+      isAnswered: false,
+    ));
+  }
+
+  void _addUserMessage(String text) {
+    messages.add(ChatMessage(sender: Sender.user, text: text));
+  }
+
+  void _handleOptionSelected(RoboOption option) {
+    setState(() {
+      totalScore += option.score;
+      _addUserMessage(option.text);
+
+      final lastBotIndex = messages.lastIndexWhere(
+          (msg) => msg.sender == Sender.bot && !msg.isAnswered);
+      if (lastBotIndex != -1) {
+        messages[lastBotIndex].isAnswered = true;
+      }
+    });
+
+    Future.delayed(const Duration(milliseconds: 400), () {
+      setState(() {
+        if (currentQuestionIndex + 1 >= roboQuestions.length) {
+          _addBotMessage("Your risk profile is: ${getRiskProfile()} 🎯");
+        } else {
+          currentQuestionIndex++;
+          final next = roboQuestions[currentQuestionIndex];
+          _addBotMessage(next.question, next.options);
+        }
+      });
+    });
   }
 
   String getRiskProfile() {
-    if (totalScore <= 10) return "Conservative";
-    if (totalScore <= 18) return "Moderate";
+    if (totalScore <= 5) return "Conservative";
+    if (totalScore <= 8) return "Moderate";
     return "Aggressive";
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
-    final question = roboQuestions[currentPage];
-
     return Scaffold(
-        backgroundColor: AppColors.darBlue,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text("Robo Advisor",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'poppins')),
-                SizedBox(height: 4),
-                Text("Select your options",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontFamily: 'poppins')),
-              ],
-            ),
+      backgroundColor: AppColors.darBlue,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: const Text("Robo Advisor",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: SvgPicture.asset('assets/icons/user_robot.svg', width: 40),
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: SvgPicture.asset(
-                'assets/icons/user_robot.svg',
-                width: 40,
-                height: 40,
+        ],
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 10),
+          Expanded(
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topRight: Radius.circular(30)),
               ),
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            const SizedBox(height: 20), // Spacing
-            Expanded(
-              // Ensures the form expands to take available space
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius:
-                      BorderRadius.only(topRight: Radius.circular(30)),
-                ),
-                padding: const EdgeInsets.all(16),
-                // child: SingleChildScrollView(
-                //   // Enables scrolling if content is too much
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.stretch,
-                //     children: [
-                //       // Your form content here
-
-                //     ],
-                //   ),
-
-                //   //new footer
-                // ),
-
-                child: isFinished
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
+              child: ListView.builder(
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
+                  final msg = messages[index];
+                  return Column(
+                    crossAxisAlignment: msg.sender == Sender.bot
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: msg.sender == Sender.bot
+                            ? MainAxisAlignment.end
+                            : MainAxisAlignment.start,
+                        children: [
+                          if (msg.sender == Sender.user)
+                            const CircleAvatar(
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.person, color: Colors.white),
+                            ),
+                          if (msg.sender == Sender.user)
+                            const SizedBox(width: 10),
+                          Flexible(
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(vertical: 5),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(20),
+                                color: msg.sender == Sender.bot
+                                    ? AppColors.darBlue
+                                    : AppColors.beige,
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    "🎯 Your Risk Profile:",
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.darBlue),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  Text(getRiskProfile(),
-                                      style: const TextStyle(
-                                          fontSize: 24, color: Colors.blue)),
-                                  const SizedBox(height: 50),
-                                ],
+                              child: Text(msg.text,
+                                  style: const TextStyle(fontSize: 12, color: Colors.white)),
+                            ),
+                          ),
+                          if (msg.sender == Sender.bot)
+                            const SizedBox(width: 10),
+                          if (msg.sender == Sender.bot)
+                            CircleAvatar(
+                              backgroundColor: AppColors.darBlue,
+                              child: SvgPicture.asset(
+                                'assets/icons/user_robot.svg',
+                                color: Colors.white,
                               ),
                             ),
-                            const SizedBox(height: 50),
-                            Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    // Navigate to details screen
-                                    Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                MainScreen()));
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.darBlue,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(30)),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 70, vertical: 12),
-                                  ),
-                                  child: Text(
-                                    "Finish",
-                                    style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ))
-                          ],
-                        ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            question.question,
-                            style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 6),
-                          ...List.generate(question.options.length,
-                              (optionIndex) {
-                            final option = question.options[optionIndex];
-                            return RadioListTile<int>(
-                              value: optionIndex,
-                              groupValue: selectedAnswers[currentPage],
-                              activeColor: AppColors.darBlue,
-                              onChanged: (value) {
-                                if (value == null) return;
-
-                                setState(() {
-                                  selectedAnswers[currentPage] = value;
-                                });
-
-                                Future.delayed(
-                                    const Duration(milliseconds: 300), () {
-                                  setState(() {
-                                    totalScore += question.options[value].score;
-
-                                    if (currentPage + 1 >=
-                                        roboQuestions.length) {
-                                      isFinished = true;
-                                    } else {
-                                      currentPage++;
-                                    }
-                                  });
-                                });
-                              },
-                              title: Text(
-                                option.text,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                  color: AppColors.darBlue,
-                                ),
-                              ),
-                            );
-                          }),
                         ],
                       ),
+                      if (msg.sender == Sender.bot &&
+                          msg.options != null &&
+                          !msg.isAnswered)
+                        Column(
+                          children: msg.options!
+                              .map(
+                                (option) => RadioListTile<String>(
+                                  title: Text(option.text),
+                                  value: option.text,
+                                  groupValue: null,
+                                  onChanged: (_) =>
+                                      _handleOptionSelected(option),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
-          ],
-        ));
+          ),
+          if (currentQuestionIndex >= roboQuestions.length)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: ElevatedButton(
+                onPressed: () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MainScreen(),
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.darBlue,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30)),
+                ),
+                child: const Text("Finish",
+                    style: TextStyle(fontSize: 14, color: Colors.white)),
+              ),
+            ),
+        ],
+      ),
+    );
   }
+}
+
+enum Sender { user, bot }
+
+class ChatMessage {
+  final Sender sender;
+  final String text;
+  final List<RoboOption>? options;
+  bool isAnswered;
+
+  ChatMessage({
+    required this.sender,
+    required this.text,
+    this.options,
+    this.isAnswered = false,
+  });
 }
 
 class RoboQuestion {

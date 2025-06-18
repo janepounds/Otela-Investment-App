@@ -33,19 +33,12 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
             padding: const EdgeInsets.only(left: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children:  [
                 Text("My Profile",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'poppins')),
+                    style: Theme.of(context).textTheme.displayLarge),
                 SizedBox(height: 4),
                 Text("Finish Setting up your profile",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontFamily: 'poppins')),
+                    style: Theme.of(context).textTheme.titleLarge),
               ],
             ),
           ),
@@ -80,7 +73,7 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
                       const Center(
                           child: Text("Banking Details",
                               style: TextStyle(
-                                  fontSize: 22, color: AppColors.darBlue))),
+                                  fontSize: 14, color: AppColors.darBlue))),
                       const SizedBox(height: 15),
                       buildDropdownField("Bank", selectedBank, banks, (value) {
                         setState(() {
@@ -112,7 +105,7 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
                         child: const Text(
                           "Back to Tax & Domicilium",
                           style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 12,
                               color: AppColors.darBlue,
                               fontWeight: FontWeight.bold),
                         ),
@@ -317,12 +310,12 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: selectedValue,
-              hint: Text(title, style: const TextStyle(color: Colors.grey)),
+              hint: Text(title, style: Theme.of(context).textTheme.labelSmall),
               isExpanded: true,
               items: items.map((String item) {
                 return DropdownMenuItem(
                   value: item,
-                  child: Text(item),
+                  child: Text(item, style: Theme.of(context).textTheme.labelSmall,),
                 );
               }).toList(),
               onChanged: onChanged,
@@ -365,12 +358,12 @@ class ProgressStepper extends StatelessWidget {
           CircleAvatar(
             radius: 16,
             backgroundColor: color,
-            child: const Icon(Icons.check, color: Colors.white, size: 18),
+            child: const Icon(Icons.check, color: Colors.white, size: 10),
           ),
           const SizedBox(height: 5),
           Text(
             title,
-            style: TextStyle(fontSize: 12, color: Colors.blue.shade900),
+            style: TextStyle(fontSize: 10, color: Colors.blue.shade900),
             textAlign: TextAlign.center,
           ),
         ],
@@ -385,7 +378,7 @@ class ProgressStepper extends StatelessWidget {
       children: [
         Text(title,
             style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+                fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -420,7 +413,7 @@ class ProgressStepper extends StatelessWidget {
       children: [
         Text(title,
             style: const TextStyle(
-                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
+                fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
         const SizedBox(height: 5),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -435,7 +428,7 @@ class ProgressStepper extends StatelessWidget {
             decoration: const InputDecoration(
               border: InputBorder.none,
               hintText: "Account Number",
-              hintStyle: TextStyle(color: Colors.grey),
+              hintStyle: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ),
         ),
@@ -455,7 +448,7 @@ class ProgressStepper extends StatelessWidget {
       child: const Text(
         "Save & Continue",
         style: TextStyle(
-            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+            fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
       ),
     );
   }

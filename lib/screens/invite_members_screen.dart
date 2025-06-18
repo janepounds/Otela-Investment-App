@@ -127,8 +127,29 @@ Best regards,
   void pickContact() async {
     try {
       Contact? contact = await FlutterContacts.openExternalPick();
+
       if (contact != null) {
-        setState(() => selectedContacts.add(contact));
+        // Fetch full contact details
+        Contact? fullContact = await FlutterContacts.getContact(contact.id);
+
+        if (fullContact!.phones.isNotEmpty) {
+          String cleanedPhone =
+              fullContact.phones.first.number.replaceAll(RegExp(r'\D'), '');
+          if (cleanedPhone.isNotEmpty) {
+            setState(() => selectedContacts.add(fullContact));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content:
+                      Text("Selected contact has an invalid phone number.")),
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text("Selected contact has no phone number.")),
+          );
+        }
       }
     } catch (e) {
       print("Error picking contact: $e");
@@ -164,21 +185,26 @@ Best regards,
       return;
     }
 
-    // Extract and format phone number
-    var phone = '';
+    // Sanitize and normalize phone number
     String rawPhone = contact.phones.first.number
-        .replaceAll(RegExp(r'\D'), ''); // Remove non-digits
+        .replaceAll(' ', '')
+        .replaceAll('-', '')
+        .replaceAll('(', '')
+        .replaceAll(')', '');
 
-    if (rawPhone.startsWith("0")) {
-      // Replace 0 with +256
+    String phone;
+
+    if (rawPhone.startsWith("0") && rawPhone.length == 10) {
       phone = "+256${rawPhone.substring(1)}";
-    } else if (rawPhone.startsWith("256")) {
+    } else if (rawPhone.startsWith("256") && rawPhone.length == 12) {
       phone = "+$rawPhone";
-    } else if (rawPhone.startsWith("+")) {
-      phone = rawPhone; // Already formatted correctly
+    } else if (rawPhone.startsWith("+256") && rawPhone.length == 13) {
+      phone = rawPhone;
     } else {
-      // Fallback if it’s a weird format: assume it needs +256
-      phone = "+256$rawPhone";
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid phone number format")),
+      );
+      return;
     }
 
     final DatabaseReference membersRef = FirebaseDatabase.instance
@@ -187,15 +213,17 @@ Best regards,
         .child(widget.stokvelId)
         .child('members'); // Using phone as the unique key
 
-    await membersRef.set({
-      'phone': phone,
-      'firstName': contact.displayName, // Null check fallback
-      'status': 'invited',
-      'roboAdvisor': false,
-      'role': 'member',
-      'amountPaid': 0,
-      'invitedAt': ServerValue.timestamp, // Firebase Realtime DB timestamp
-    });
+
+   await membersRef.child(phone).set({
+  'phone': phone,
+  'firstName': contact.displayName,
+  'status': 'invited',
+  'roboAdvisor': false,
+  'role': 'member',
+  'amountPaid': 0,
+  'invitedAt': ServerValue.timestamp,
+});
+
 
     // Generate WhatsApp message
     String message = Uri.encodeComponent(_messageController.text);
@@ -224,12 +252,12 @@ Best regards,
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children:  [
             Text("Invite Members",
-                style: TextStyle(color: Colors.white, fontSize: 20)),
+                style: Theme.of(context).textTheme.displayLarge),
             SizedBox(height: 4),
             Text("Select a contact to invite",
-                style: TextStyle(color: Colors.white, fontSize: 14)),
+                style: Theme.of(context).textTheme.titleLarge),
           ],
         ),
         actions: [
@@ -261,7 +289,7 @@ Best regards,
                   children: [
                     Text(
                       "Click to Select Contacts",
-                      style: TextStyle(color: AppColors.darBlue, fontSize: 16),
+                      style: TextStyle(color: AppColors.darBlue, fontSize: 12),
                     ),
                     SizedBox(width: 8),
                     SvgPicture.asset("assets/icons/address_book.svg"),
@@ -283,11 +311,13 @@ Best regards,
                           borderRadius: BorderRadius.circular(12)),
                       elevation: 3,
                       child: ListTile(
-                        title: Text(contact.displayName ?? "Unknown"),
+                        title: Text(contact.displayName ?? "Unknown",
+                        style: TextStyle(fontSize: 12),),
                         subtitle: Text(
                           contact.phones.isNotEmpty
                               ? contact.phones.first.number
                               : "No phone number",
+                              style: TextStyle(fontSize: 10),
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
@@ -304,10 +334,11 @@ Best regards,
               TextField(
                 controller: _messageController,
                 maxLines: 5,
+                style: TextStyle(fontSize: 12),
                 decoration: InputDecoration(
                   labelText: "Enter Invitation Message", // Acts as a legend
                   labelStyle: TextStyle(
-                    color: AppColors.gray, // Matches the design
+                    color: Colors.grey, // Matches the design
                     fontWeight: FontWeight.bold,
                   ),
                   border: OutlineInputBorder(
