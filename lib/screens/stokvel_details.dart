@@ -1,6 +1,8 @@
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/upload_document_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,8 +22,32 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
 
   /* ---------------- helpers ---------------- */
 
-  Future<String?> _getUserId() async =>
-      (await SharedPreferences.getInstance()).getString('userId');
+Future<String> _getUserId() async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw FirebaseAuthException(message: "User not found", code: "401");
+    }
+
+    return user.uid;
+  } catch (e) {
+    Fluttertoast.showToast(
+      msg: e.toString(),
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+    );
+
+    // Return an empty string or rethrow depending on your use case
+    return ''; // or you can `rethrow;` if you want the caller to handle it
+  }
+}
+
+
+  // Future<String?> _getUserId() async =>
+  //     (await SharedPreferences.getInstance()).getString('userId');
+
+    
+      final DatabaseReference db = FirebaseDatabase.instance.ref();
 
   Query _queryUserStokvels(String userId) => FirebaseDatabase.instance
       .ref('stokvels')
