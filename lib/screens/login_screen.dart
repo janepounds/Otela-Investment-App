@@ -156,7 +156,7 @@ Future<bool> userHasStokvel(String userId) async {
                   controller: _emailController,
                   decoration: InputDecoration(
                     hintText: 'E-mail',
-                    hintStyle: const TextStyle(color: Colors.white, fontSize: 16),
+                    hintStyle: const TextStyle(color: Colors.white, fontSize: 12),
                     filled: true,
                     fillColor: const Color(0xFFa78a52),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -176,7 +176,7 @@ Future<bool> userHasStokvel(String userId) async {
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
                     hintText: 'Password',
-                    hintStyle: const TextStyle(color: Colors.white, fontSize: 16),
+                    hintStyle: const TextStyle(color: Colors.white, fontSize: 12),
                     filled: true,
                     fillColor: const Color(0xFFa78a52),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -217,7 +217,7 @@ Future<bool> userHasStokvel(String userId) async {
                       child: const Text(
                         'LOGIN',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: AppColors.beige,
                         ),

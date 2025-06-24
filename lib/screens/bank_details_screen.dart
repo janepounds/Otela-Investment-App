@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
+import 'package:otela_investment_club_app/screens/main_screen.dart';
 
 class BankDetailscreen extends StatefulWidget {
   const BankDetailscreen({super.key});
@@ -52,7 +53,7 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
         ),
         body: Column(
           children: [
-            const SizedBox(height: 20), // Spacing
+            const SizedBox(height: 10), // Spacing
             Expanded(
               // Ensures the form expands to take available space
               child: Container(
@@ -67,13 +68,13 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 10),
                       const ProgressStepper(),
                       const SizedBox(height: 20),
                       const Center(
                           child: Text("Banking Details",
                               style: TextStyle(
-                                  fontSize: 14, color: AppColors.darBlue))),
+                                  fontSize: 12, color: AppColors.darBlue))),
                       const SizedBox(height: 15),
                       buildDropdownField("Bank", selectedBank, banks, (value) {
                         setState(() {
@@ -98,7 +99,7 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
                         },
                       ),
                       const SizedBox(height: 30),
-                      buildSaveButton(),
+                      buildSaveButton(context),
                       const SizedBox(height: 15),
                       TextButton(
                         onPressed: () {},
@@ -221,15 +222,17 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
+    
   }) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
       validator: validator,
+      style:Theme.of(context).textTheme.labelSmall ,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: const TextStyle(color: Colors.grey),
+        labelStyle: Theme.of(context).textTheme.labelSmall,
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(color: AppColors.gray)),
@@ -273,13 +276,13 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
     );
   }
 
-  Widget buildSaveButton() {
+  Widget buildSaveButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
         //navigate to banking details
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => BankDetailscreen()),
+          MaterialPageRoute(builder: (context) => MainScreen()),
         );
       },
       style: ElevatedButton.styleFrom(
@@ -330,6 +333,7 @@ class _BankDetailsScreenState extends State<BankDetailscreen> {
 
 class ProgressStepper extends StatelessWidget {
   const ProgressStepper({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
@@ -350,22 +354,16 @@ class ProgressStepper extends StatelessWidget {
     );
   }
 
-  Widget buildStep(String title, Color color) {
+   Widget buildStep(String title, Color selectedColor) {
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: color,
-            child: const Icon(Icons.check, color: Colors.white, size: 10),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            title,
-            style: TextStyle(fontSize: 10, color: Colors.blue.shade900),
-            textAlign: TextAlign.center,
-          ),
+          Icon( Icons.check_circle,
+              color: selectedColor, size: 12),
+          SizedBox(width: 3),
+          Text(title, style: TextStyle(fontSize: 10, color: AppColors.darBlue)),
+          SizedBox(width: 8),
         ],
       ),
     );
@@ -437,9 +435,13 @@ class ProgressStepper extends StatelessWidget {
     );
   }
 
-  Widget buildSaveButton() {
+  Widget buildSaveButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: () {
+        //go to mainscreen
+         Navigator.popUntil(
+                              context, ModalRoute.withName('/main'));
+      },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.amber.shade700,
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),

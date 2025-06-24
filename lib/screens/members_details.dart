@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
 import 'package:otela_investment_club_app/screens/invite_members_screen.dart';
@@ -28,7 +29,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children:  [
+          children: [
             Text(
               "Members",
               style: Theme.of(context).textTheme.displayLarge,
@@ -97,29 +98,40 @@ class _MembersListScreenState extends State<MembersListScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('stokvels')
-                      .doc(widget.stokvelId)
-                      .collection('members')
-                      .snapshots(),
+                child: StreamBuilder<DatabaseEvent>(
+                  stream: FirebaseDatabase.instance
+                      .ref('stokvels/${widget.stokvelId}/members')
+                      .onValue,
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                    var members = snapshot.data!.docs.where((member) {
-                      String name =
-                          (member['firstName'] ?? "Unknown").toLowerCase();
-                      return name.contains(searchQuery);
+                    if (!snapshot.hasData ||
+                        snapshot.data!.snapshot.value == null) {
+                      return const Center(
+                        child: Text("No members found.",
+                            style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      );
+                    }
+
+                    final data = Map<String, dynamic>.from(
+                        snapshot.data!.snapshot.value as Map);
+
+                    // Convert to list of members
+                    final members = data.entries
+                        .map((e) => Map<String, dynamic>.from(e.value))
+                        .where((member) {
+                      final name = (member['firstName'] ?? "Unknown")
+                          .toString()
+                          .toLowerCase();
+                      return name.contains(searchQuery.toLowerCase());
                     }).toList();
 
                     if (members.isEmpty) {
                       return const Center(
-                        child: Text(
-                          "No members found.",
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
-                        ),
+                        child: Text("No members found.",
+                            style: TextStyle(color: Colors.grey, fontSize: 16)),
                       );
                     }
 
@@ -128,7 +140,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
                       itemBuilder: (context, index) {
                         var member = members[index];
                         String firstName = member['firstName'] ?? "Unknown";
-                        String status = member['status'];
+                        String status = member['status'] ?? "invited";
 
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8),
@@ -139,28 +151,20 @@ class _MembersListScreenState extends State<MembersListScreen> {
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 12),
-
-                            // Display First Name
                             title: Text(
                               firstName,
                               style: const TextStyle(
                                   fontSize: 12, fontWeight: FontWeight.w600),
                             ),
-
-                            // Display Additional Info Below Name
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const SizedBox(height: 4), // Small spacing
-
-                                // Robo Advisor Status
+                                const SizedBox(height: 4),
                                 Text(
                                   "Robo Advisor: ${(member['roboAdvisor'] ?? false) ? 'Yes' : 'No'}",
                                   style: const TextStyle(
                                       fontSize: 12, color: Colors.black54),
                                 ),
-
-                                // Amount Paid
                                 Text(
                                   "Amount Paid: \$${(member['amountPaid'] ?? 0).toStringAsFixed(2)}",
                                   style: const TextStyle(
@@ -168,8 +172,6 @@ class _MembersListScreenState extends State<MembersListScreen> {
                                 ),
                               ],
                             ),
-
-                            // Status Badge (Trailing)
                             trailing: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 5),
@@ -195,7 +197,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
                                   Text(
                                     status == "invited" ? "Invited" : "Joined",
                                     style: TextStyle(
-                                      fontSize: 12,
+                                      fontSize: 10,
                                       fontWeight: FontWeight.w500,
                                       color: status == "invited"
                                           ? Colors.orange
@@ -233,8 +235,7 @@ class _MembersListScreenState extends State<MembersListScreen> {
             );
           },
           backgroundColor: Colors.transparent,
-        
-          label:  Row(
+          label: Row(
             children: [
               Icon(Icons.add, color: Colors.white), // Plus icon at the start
               SizedBox(width: 5),

@@ -137,7 +137,7 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
         ),
         body: Column(
           children: [
-            const SizedBox(height: 20), // Spacing
+            const SizedBox(height: 8), // Spacing
             Expanded(
               // Ensures the form expands to take available space
               child: Container(
@@ -152,13 +152,13 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 10),
                       const ProgressStepper(),
                       const SizedBox(height: 20),
                       const Center(
                           child: Text("TAX PIN Certificate",
                               style: TextStyle(
-                                  fontSize: 14, color: AppColors.darBlue))),
+                                  fontSize: 12, color: AppColors.darBlue))),
                       const SizedBox(height: 15),
                       buildInputField(
                           "Tax number (PIN/TIN/SSN)", taxNumberController),
@@ -169,11 +169,11 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
                           taxFileUrl,
                           () => pickFile(true),
                           () => uploadFile(taxFile!, true)),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 20),
                       const Center(
                           child: Text("Domicilium",
                               style: TextStyle(
-                                  fontSize: 14, color: AppColors.darBlue))),
+                                  fontSize: 12, color: AppColors.darBlue))),
                       const SizedBox(height: 10),
                       _buildDomiciliumList(),
                       const SizedBox(height: 20),
@@ -220,43 +220,60 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
     );
   }
 
-  Widget buildUploadSection(String title, File? file, String? fileUrl,
-      VoidCallback onPick, VoidCallback onUpload) {
-    return Center(
-        child: Column(
+ Widget buildUploadSection(
+    String title,
+    File? file,
+    String? fileUrl,
+    VoidCallback onPick,
+    VoidCallback onUpload,
+  ) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darBlue)),
-        const SizedBox(height: 5),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            file != null
-                ? Expanded(
-                    child: Text(file.path.split('/').last,
-                        style: const TextStyle(color: Colors.black54)))
-                : const SizedBox(),
+            Text(
+              title,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.darBlue),
+            ),
             ElevatedButton(
               onPressed: onPick,
               style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.darBlue,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30))),
-              child: const Text("Upload File",
-                  style: TextStyle(color: Colors.white, fontSize: 14),),
-            ),
-            if (file != null)
-              ElevatedButton(
-                onPressed: onUpload,
-                child:
-                    const Text("Upload", style: TextStyle(color: Colors.white, fontSize: 14)),
+                backgroundColor: AppColors.darBlue,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)),
               ),
+              child: const Text(
+                "Upload File",
+                style: TextStyle(color: Colors.white, fontSize: 10),
+              ),
+            ),
           ],
         ),
+        const SizedBox(height: 5),
+        if (file != null)
+          Text(
+            file.path.split('/').last,
+            style: const TextStyle(color: Colors.black54, fontSize: 12),
+          ),
+        if (file != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: ElevatedButton(
+              onPressed: onUpload,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
+              child: const Text("Upload",
+                  style: TextStyle(color: Colors.white, fontSize: 12)),
+            ),
+          ),
         if (fileUrl != null)
           Padding(
             padding: const EdgeInsets.only(top: 5),
@@ -264,8 +281,10 @@ class __UploadDocumentScreenState extends State<UploadDocumentScreen> {
                 style: const TextStyle(color: Colors.green, fontSize: 12)),
           ),
       ],
-    ));
-  }
+    ),
+  );
+}
+
 
   Widget buildSaveButton() {
     return ElevatedButton(
@@ -344,10 +363,10 @@ class ProgressStepper extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(isChecked ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: selectedColor, size: 10),
-          SizedBox(width: 4),
+              color: selectedColor, size: 12),
+          SizedBox(width: 3),
           Text(title, style: TextStyle(fontSize: 10, color: AppColors.darBlue)),
-          SizedBox(width: 10),
+          SizedBox(width: 8),
         ],
       ),
     );

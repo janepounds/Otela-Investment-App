@@ -1,4 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:otela_investment_club_app/colors.dart';
@@ -36,14 +36,28 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
     return snap.exists ? Map<String, dynamic>.from(snap.value as Map) : null;
   }
 
-  Future<String> _getAdminName(String userId) async {
-    if (adminCache.containsKey(userId)) return adminCache[userId]!;
-    final user = await _getUserById(userId);
-    final name =
-        user == null ? "Unknown Admin" : "${user['firstName']} ${user['lastName']}";
-    adminCache[userId] = name;
-    return name;
+Future<String> _getAdminName(String stokvelId) async {
+  final ref = FirebaseDatabase.instance.ref('stokvels/$stokvelId/members');
+  final snapshot = await ref.once();
+
+  if (snapshot.snapshot.exists) {
+    final membersMap = Map<String, dynamic>.from(snapshot.snapshot.value as Map);
+
+    for (final entry in membersMap.entries) {
+      final member = Map<String, dynamic>.from(entry.value);
+      if (member['role'] == 'admin') {
+        final firstName = member['firstName'] ?? '';
+        final lastName = member['lastName'] ?? '';
+        return '$firstName $lastName';
+      }
+    }
   }
+
+  return "Unknown Admin";
+}
+
+
+
 
   /* ---------------- UI ---------------- */
 
@@ -93,11 +107,7 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
                builder: (context, constraints) {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: FutureBuilder<String>(
-                    future: _getAdminName(stokvel['createdBy']),
-                    builder: (context, adminSnap) {
-                      final adminName = adminSnap.data ?? "Fetching...";
-                      return Column(
+                  child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _readOnly("Stokvel Name",
@@ -106,19 +116,20 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
                           _readOnly("Registration Number",
                               stokvel['stokvelNumber'] ?? "N/A"),
                           const SizedBox(height: 10),
-                          _readOnly("Stokvel Admin", adminName),
+                          _adminName(stokvelId),
                           const SizedBox(height: 10),
                           _buildPhoneNumberField(),
                           const SizedBox(height: 20),
-                          _sectionTitle("Members"),
-                          const SizedBox(height: 10),
                           _membersList(stokvelId),
                           const SizedBox(height: 30),
                           _saveButton(),
                         ],
-                      );
-                    },
-                  ),
+                      ),
+                  
+
+
+        
+ 
                 );
                 },
                  ),
@@ -158,6 +169,7 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
         child: TextFormField(
           readOnly: true,
           initialValue: value,
+          style: Theme.of(context).textTheme.bodySmall,
           decoration: InputDecoration(
             labelText: label,
             hintStyle: Theme.of(context).textTheme.labelSmall,
@@ -167,6 +179,51 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
           ),
         ),
       );
+
+
+Widget _adminName(String stokvelId) => StreamBuilder<DatabaseEvent>(
+  stream: _stokvelMembersStream(stokvelId),
+  builder: (context, snap) {
+    if (!snap.hasData || snap.data!.snapshot.value == null) {
+      return const Text("No members yet.");
+    }
+
+    final membersMap = Map<String, dynamic>.from(snap.data!.snapshot.value as Map);
+
+    // Look for admin member
+    final adminEntry = membersMap.entries.firstWhere(
+      (entry) {
+        final memberData = Map<String, dynamic>.from(entry.value);
+        return memberData['role'] == 'admin';
+      },
+      orElse: () => MapEntry('', null),
+    );
+
+    if (adminEntry.value == null) {
+      return const Text("No admin found.");
+    }
+
+    final admin = Map<String, dynamic>.from(adminEntry.value);
+    final fullName = "${admin['firstName'] ?? ''} ${admin['lastName'] ?? ''}";
+   
+
+    return Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: TextFormField(
+          readOnly: true,
+          initialValue: fullName,
+          style: Theme.of(context).textTheme.bodySmall,
+          decoration: InputDecoration(
+            labelText: "Stokvel Admin",
+            hintStyle: Theme.of(context).textTheme.labelSmall,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+      );
+  },
+);
 
   Widget _buildPhoneNumberField() => Row(
         children: [
@@ -184,6 +241,7 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
               items: ["+27", "+254", "+256", "+233"]
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
+                  style:  Theme.of(context).textTheme.bodySmall,
             ),
           ),
           const SizedBox(width: 10),
@@ -191,7 +249,7 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
             child: TextFormField(
               controller: phoneController,
               keyboardType: TextInputType.phone,
-              style: Theme.of(context).textTheme.labelSmall,
+             style: Theme.of(context).textTheme.bodySmall,
               decoration: InputDecoration(
                 labelText: "Phone Number",
                 hintStyle: Theme.of(context).textTheme.labelSmall,
@@ -205,37 +263,62 @@ class _StokvelDetailsScreenState extends State<StokvelDetailsScreen> {
         ],
       );
 
-  Widget _membersList(String stokvelId) => StreamBuilder<DatabaseEvent>(
-        stream: _stokvelMembersStream(stokvelId),
-        builder: (context, snap) {
-          if (!snap.hasData || snap.data!.snapshot.value == null) {
-            return const Text("No members yet.");
-          }
-          final members =
-              Map<String, dynamic>.from(snap.data!.snapshot.value as Map);
+Widget _membersList(String stokvelId) => StreamBuilder<DatabaseEvent>(
+  stream: _stokvelMembersStream(stokvelId),
+  builder: (context, snap) {
+    if (!snap.hasData || snap.data!.snapshot.value == null) {
+      return const Text("No members yet.");
+    }
 
-          return Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(20),
+    final members = Map<String, dynamic>.from(snap.data!.snapshot.value as Map);
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text(
+            "Members",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.darBlue,
             ),
-            child: Column(
-              children: members.entries.map((e) {
-                final m = Map<String, dynamic>.from(e.value);
-                final name = "${m['firstName']} ${m['lastName']}";
-                return ListTile(
-                  title:
-                      Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
-                  subtitle: Text(m['phone'] ?? '', style: TextStyle(fontSize: 10),),
-                  trailing: Text(m['status'] ?? 'Pending',
-                      style: const TextStyle(color: AppColors.darBlue, fontSize: 10)),
-                );
-              }).toList(),
-            ),
-          );
-        },
-      );
+          ),
+          ...members.entries.map((e) {
+            final m = Map<String, dynamic>.from(e.value);
+            final name = "${m['firstName']} ${m['lastName']}";
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 10,
+                ),
+              ),
+              subtitle: Text(
+                m['phone'] ?? '',
+                style: const TextStyle(fontSize: 10),
+              ),
+              trailing: Text(
+                m['status'] ?? 'Pending',
+                style: const TextStyle(
+                  color: AppColors.darBlue,
+                  fontSize: 11,
+                ),
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  },
+);
 
   Widget _sectionTitle(String t) => Center(
         child: Text(t,

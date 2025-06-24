@@ -114,7 +114,7 @@ class _AnimatedScreensState extends State<AnimatedScreens> {
                     child: Text(
                       'GET STARTED',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -146,7 +146,7 @@ class _AnimatedScreensState extends State<AnimatedScreens> {
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 18,
                 color: AppColors.darBlue,
                 fontFamily: 'poppins',
               ),
